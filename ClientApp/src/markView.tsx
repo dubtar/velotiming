@@ -6,8 +6,9 @@ type Props = {
     start: Date
 }
 const MarkView: React.SFC<Props> = (props) => {
-    return <div className="d-inline-block">
-        {props.mark && Svc.formatTime(props.mark.time, props.start)}
+    return <div className="d-inline-block p-1 mr-1 border border-primary rounded bg-light">
+        <div>{Svc.formatTime(props.mark.time, props.start)}</div>
+        <div className="text-center">{props.mark.number}</div>
     </div>;
 }
 

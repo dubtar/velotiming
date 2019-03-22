@@ -11,7 +11,7 @@ export class Mark {
 export default class Service {
     static formatTime(time: Date | undefined, start: Date): string {
         if (time === undefined) return '--:--';
-        let dur = moment.duration(moment().diff(start));
+        let dur = moment.duration(moment(time).diff(start));
         let result = Math.floor(dur.asHours()) + moment.utc(dur.asMilliseconds()).format(":mm:ss")
         return result;
     }
@@ -37,6 +37,7 @@ export default class Service {
             mark.numberSource = numberSource;
         } else
             this.marks.push({ number, numberSource })
+        this.onChange();
     }
 
     private static onChange() {
