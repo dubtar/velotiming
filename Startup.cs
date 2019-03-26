@@ -5,8 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using VeloTiming.Hubs;
 
-namespace veloTiming
+namespace VeloTiming
 {
     public class Startup
     {
@@ -21,6 +22,8 @@ namespace veloTiming
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+
+            services.AddSignalR();
 
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
@@ -46,6 +49,11 @@ namespace veloTiming
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
+
+            app.UseSignalR(routes =>
+            {
+                routes.MapHub<ResultHub>("/resultHub");
+            });
 
             app.UseMvc(routes =>
             {

@@ -12,6 +12,7 @@ const InitialState = {
 type Props = {}
 
 export default class Timing extends Component<Props, typeof InitialState> {
+
     constructor(props: Props) {
         super(props);
         this.state = InitialState;
