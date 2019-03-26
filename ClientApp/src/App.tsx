@@ -4,10 +4,14 @@ import { Navbar, Container, Row } from "react-bootstrap";
 import Timing from "./timing";
 import 'moment/locale/ru';
 import moment from 'moment';
+import Service from "./svc";
 
 moment.locale('ru');
 
 class App extends Component {
+  componentDidMount() {
+    Service.init();
+  }
   render() {
     return (
       <div className="h-100 d-flex flex-column">

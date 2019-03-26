@@ -6,11 +6,23 @@ namespace VeloTiming.Controllers
     [Route("api")]
     public class MainController : Controller
     {
-        [HttpGet("")]
-        public IActionResult GetCurrentRace()
+        private readonly IRaceService raceService;
+        public MainController(IRaceService raceService)
         {
-            // временная заглушка
-            return Ok(new { name = "Пробная гонка", date = DateTime.Now.Date });
+            this.raceService = raceService;
+        }
+        private static DateTime? startTime;
+
+        [HttpGet]
+        public RaceInfo GetCurrentRace()
+        {
+            return raceService.GetRaceInfo();
+        }
+
+        [HttpGet]
+        public string Get()
+        {
+            return "TEst";
         }
     }
 }

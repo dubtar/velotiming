@@ -5,7 +5,8 @@ import Svc, { Mark } from './svc';
 import MarkView from "./markView";
 
 const InitialState = {
-    startTime: undefined as Date | undefined,
+    loaded: false,
+    startTime: null as Date | null,
     marks: undefined as Mark[] | undefined,
     number: ''
 }
@@ -29,9 +30,13 @@ export default class Timing extends Component<Props, typeof InitialState> {
     }
 
     componentDidMount() {
-        // attach to keyboard press
-        document.addEventListener('keydown', this.onKeyDown);
-        Svc.Marks.subscribe(marks => this.setState({ marks }))
+        Svc.GetRaceInfo().then(race => {
+            this.setState({ startTime: race.start, loaded: true })
+
+            // attach to keyboard press
+            document.addEventListener('keydown', this.onKeyDown);
+            Svc.Marks.subscribe(marks => this.setState({ marks }));
+        });
     }
     componentWillUnmount() {
         document.removeEventListener('keydown', this.onKeyDown)
@@ -39,6 +44,7 @@ export default class Timing extends Component<Props, typeof InitialState> {
     }
 
     onKeyDown(e: KeyboardEvent) {
+        if (!this.state.loaded) return;
         if (e.repeat) return; // не отвечать на зажатую клавишу. Может предупреждать о кошке, сидящей на кнопке
         if (e.key === ' ' || e.key === 'Spacebar') {
             Svc.AddMarkNow('UI');
@@ -68,6 +74,7 @@ export default class Timing extends Component<Props, typeof InitialState> {
     }
 
     render() {
+        if (!this.state.loaded) return <Container>Соединение...</Container>
         return (
             <Container className="flex-fill">
                 {!this.state.startTime &&

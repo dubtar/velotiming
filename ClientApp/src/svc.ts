@@ -10,8 +10,17 @@ export class Mark {
     numberSource?: string;
 }
 
+interface RaceInfo {
+    name: string;
+    date: Date;
+    start: Date | null;
+}
+
 export default class Service {
-    constructor() {
+    private static inited = false;
+    public static init() {
+        if (this.inited) return;
+        else this.inited = true;
         // TODO: load current marks on start
 
         // listen to singalr
@@ -21,12 +30,32 @@ export default class Service {
             Service.marks.push(mark);
             Service.onChange()
         });
-        Service.sRconnection.start();
+        Service.sRconnection.on('GetRaceInfo', (race: RaceInfo) => {
+            Service.race = race;
+            if (Service.racePromiseResolve) {
+                Service.racePromiseResolve(race);
+                delete Service.racePromise;
+            }
+        }
+        );
+        Service.sRconnection.start().catch(err => console.error(err)).then(() => {
+            Service.sRconnection!!.send("GetRaceInfo");
+        });
     }
 
     private static sRconnection: signalR.HubConnection | undefined;
+    private static race: RaceInfo | undefined = undefined;
+    private static racePromise: Promise<RaceInfo>;
+    private static racePromiseResolve: (r: RaceInfo) => void | undefined;
     private static marks: Mark[] = [];
     public static readonly Marks = new Subject<Mark[]>();
+
+    public static GetRaceInfo(): Promise<RaceInfo> {
+        if (this.race) return Promise.resolve(this.race);
+        return Service.racePromise || (Service.racePromise = new Promise<RaceInfo>((resolve) => {
+            Service.racePromiseResolve = resolve;
+        }));
+    }
 
     public static AddMarkNow(source: string) {
         // find first mark with no time
@@ -54,7 +83,7 @@ export default class Service {
         let m = { ...mark, id: 'TODO' };
         this.marks.push(m);
         if (Service.sRconnection)
-            Service.sRconnection.invoke('addMark', m).catch(err => console.error(err));
+            Service.sRconnection.send('ResultAdded', m).catch(err => console.error(err));
     }
 
     private static onChange() {
