@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
+using VeloTiming.Data;
 
 namespace VeloTiming.Controllers
 {
@@ -11,18 +13,18 @@ namespace VeloTiming.Controllers
         {
             this.raceService = raceService;
         }
-        private static DateTime? startTime;
 
-        [HttpGet]
+        [HttpGet("race")]
         public RaceInfo GetCurrentRace()
         {
             return raceService.GetRaceInfo();
         }
 
-        [HttpGet]
-        public string Get()
+        [HttpGet("marks")]
+        public IEnumerable<Mark> GetMarks() 
         {
-            return "TEst";
+
+            return raceService.GetMarks();
         }
     }
 }

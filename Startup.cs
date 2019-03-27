@@ -25,6 +25,8 @@ namespace VeloTiming
 
             services.AddSignalR();
 
+            services.AddTransient(typeof(IRaceService), typeof(RaceService));
+
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
             {
@@ -46,7 +48,7 @@ namespace VeloTiming
                 app.UseHsts();
             }
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
 

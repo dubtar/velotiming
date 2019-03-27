@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.SignalR;
 using System.Threading.Tasks;
+using VeloTiming.Data;
 
 namespace VeloTiming.Hubs {
     public class ResultHub : Hub
@@ -9,19 +10,20 @@ namespace VeloTiming.Hubs {
         {
             this.raceService = raceService;
         }
-
-        public async Task GetRaceInfo() {
-            var info = raceService.GetRaceInfo();
-            await Clients.All.SendAsync("GetRaceInfo", info);
-        }
-
         public async Task RaceStarted() {
-            var startDate = raceService.StartRace();
-            await Clients.All.SendAsync("Start", startDate);
+            var race = raceService.StartRace();
+            await Clients.All.SendAsync("RaceStarted", race);
         }
 
         public async Task ResultAdded(Mark mark) {
+            mark = raceService.AddMark(mark);
             await Clients.Others.SendAsync("ResultAdded", mark);
         }
+
+        public async Task ResultUpdated(Mark mark) {
+            mark = raceService.UpdateMark(mark);
+            await Clients.Others.SendAsync("ResultUpdated", mark);
+        }
+
     }
 }
