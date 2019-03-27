@@ -4,8 +4,8 @@ import * as signalR from "@aspnet/signalr";
 
 export class Mark {
     id!: string;
-    time!: Date | null;
-    number?: string;
+    time?: Date | null;
+    number?: string | null;
     timeSource?: string;
     numberSource?: string;
 }
@@ -89,7 +89,11 @@ export default class Service {
     }
 
     public static AddNumber(number: string, numberSource: string) {
-        let mark = Service.marks.find(m => m.number === undefined);
+        let mark;
+        for(let i = Service.marks.length -1; i>=0; i--) {
+            if (Service.marks[i].number) break;
+            mark = Service.marks[i];
+        }
         if (mark) {
             mark.number = number;
             mark.numberSource = numberSource;
@@ -113,7 +117,7 @@ export default class Service {
 
     public static formatTime(time: Date | null | undefined, start: Date): string {
         if (!time) return '--:--';
-        let dur = moment.duration(moment().diff(start));
+        let dur = moment.duration(moment(time).diff(start));
         let result = Math.floor(dur.asHours()) + moment.utc(dur.asMilliseconds()).format(":mm:ss")
         return result;
     }
