@@ -11,13 +11,6 @@
            "url": "https://localhost:5001",
            "webRoot": "${workspaceFolder}/ClientApp"
        },
-       {
-           "type": "edge",
-           "request": "attach",
-           "name": "Attach to Edge",
-           "port": 2015,
-           "webRoot": "${workspaceFolder}/ClientApp"
-       },
         {
             "name": ".NET Core Launch (web)",
             "type": "coreclr",

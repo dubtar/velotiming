@@ -1,12 +1,13 @@
-import { RouteComponentProps } from "react-router";
-import { Race } from "./Races";
-import { Row, Table, Button, Alert, Spinner } from "react-bootstrap";
-import React from 'react'
+import { RouteComponentProps, Redirect } from "react-router";
+import { Race } from "./RaceSvc";
+import { Row, Table, Button, Alert, Spinner, ButtonGroup } from "react-bootstrap";
+import React, { SyntheticEvent } from 'react'
 
 
 const InitialState = {
     error: null as string | null,
-    races: null as Race[] | null
+    races: null as Race[] | null,
+    gotoRace: 0
 }
 
 type Props = RouteComponentProps<{}>
@@ -31,7 +32,9 @@ export default class RaceList extends React.Component<Props, typeof InitialState
 
     }
 
-    async deleteRace(race: Race) {
+    async deleteRace(race: Race, e: SyntheticEvent) {
+        e.stopPropagation()
+        e.preventDefault()
         if (confirm(`Удалить гонку ${race.name}?`)) {
 
             try {
@@ -48,32 +51,45 @@ export default class RaceList extends React.Component<Props, typeof InitialState
         }
     }
 
+    openRace(id: number, e: SyntheticEvent) {
+        e.stopPropagation()
+        e.preventDefault()
+        this.setState({ gotoRace: id })
+    }
+
     render() {
-        if (this.state.races === null) return <div>Загрузка...</div>
+        if (this.state.gotoRace > 0) return <Redirect push to={`${this.props.match.path}/${this.state.gotoRace}`} />;
         return (
             <Row>
                 {this.state.error && <Alert variant="danger">{this.state.error}</Alert>}
                 {this.state.races && (
                     <>
                         <h1>Гонки</h1>
-                        <Table>
+                        <Table striped bordered hover>
                             <thead><tr>
                                 <th scope="col">Дата</th>
                                 <th scope="col">Название</th>
                                 <th scope="col">Описание</th>
                                 <th></th>
                             </tr></thead>
-                            {this.state.races.map(r => <tr key={r.id}>
-                                <td>{new Date(r.date).toLocaleDateString('ru')}</td>
-                                <td>{r.name}</td>
-                                <td>{r.description}</td>
-                                <td><Button variant="outline-danger" onClick={this.deleteRace.bind(this, r)}>Удалить</Button></td>
-                            </tr>)}
+                            <tbody>
+                                {this.state.races.map(r => (
+                                    <tr key={r.id} onClick={this.openRace.bind(this, r.id)} >
+                                        <td>{new Date(r.date).toLocaleDateString('ru')}</td>
+                                        <td>{r.name}</td>
+                                        <td>{r.description}</td>
+                                        <td>
+                                            <ButtonGroup>
+                                                <Button variant="outline-primary" onClick={this.openRace.bind(this, r.id)}>Перейти</Button>
+                                                <Button variant="outline-danger" onClick={this.deleteRace.bind(this, r)}>Удалить</Button>
+                                            </ButtonGroup>
+                                        </td>
+                                    </tr>))}
+                            </tbody>
                         </Table>
                     </>)}
-                {this.state.races === null && <Spinner animation="border" role="status">
-                    <span className="sr-only">Loading...</span>
-                </Spinner>}
+
+                {this.state.races === null && <Spinner animation="border" className="m-3"></Spinner>}
             </Row>
         )
     }
