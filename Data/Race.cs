@@ -19,7 +19,9 @@ namespace VeloTiming.Data
 
     public enum RaceType {
         [Description("Групповая кругами")]
-        Laps
-        // TimeTrial, Criterium
+        Laps = 1,
+        [Description("Разделка")]
+        TimeTrial = 2
+        // Criterium
     }
 }

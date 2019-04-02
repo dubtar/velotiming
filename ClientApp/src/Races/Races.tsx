@@ -26,8 +26,8 @@ const Races: React.SFC<Props> = (props) => {
 export default Races;
 
 export interface Race {
-    Id: number;
-    Name: string;
-    Date: Date;
-    Description: string;
+    id: number;
+    name: string;
+    date: string;
+    description: string;
 }
