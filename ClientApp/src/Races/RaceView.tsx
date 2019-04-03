@@ -1,14 +1,15 @@
 import { RouteComponentProps } from "react-router";
 import React from 'react'
 import { Spinner, Alert, Row, Col, Button } from "react-bootstrap";
-import { Race, Category } from "./RaceSvc";
-import EditCategory from "../EditCategory";
+import RaceSvc, { Race, Category } from "./RaceSvc";
+import EditCategory from "./EditCategory";
+import RaceService from "./RaceSvc";
 
 const InitialState = {
-    raceId: '',
+    raceId: 0,
     race: undefined as Race | undefined,
     error: '',
-    editCategory: undefined as Category | undefined
+    editCategory: null as Category | null
 }
 
 type Props = RouteComponentProps<{ id: string }>
@@ -16,15 +17,14 @@ type Props = RouteComponentProps<{ id: string }>
 export default class RaceView extends React.Component<Props, typeof InitialState> {
     constructor(props: Props) {
         super(props)
-        this.state = { ...InitialState, raceId: props.match.params.id }
+        this.state = { ...InitialState, raceId: parseInt(props.match.params.id) }
         this.addCategory = this.addCategory.bind(this);
     }
 
     async componentDidMount() {
         try {
-            const resp = await fetch(`/api/races/${this.state.raceId}`)
-            if (!resp.ok) throw `${resp.statusText} ${resp.body}`
-            this.setState({ race: await resp.json() })
+            const race = await RaceService.GetRace(this.state.raceId)
+            this.setState({ race: race })
         }
         catch (ex) {
             this.setState({ error: ex.toString() })
@@ -32,7 +32,20 @@ export default class RaceView extends React.Component<Props, typeof InitialState
     }
 
     addCategory() {
-        this.setState({ editCategory: { id: 0, name: '', shortName: '', minYearOrBirth: 0, maxYearOrBirth: new Date().getFullYear() } })
+        this.setState({ editCategory: { id: 0, name: '', code: '' } })
+    }
+
+    async saveCategory(category?: Category) {
+        if (category) {
+            if (category.id) { // edit exiting
+                // TODO
+
+            } else { // add new
+                await RaceSvc.AddCategory(this.state.race!!.id, category)
+            }
+        }
+        else
+            this.setState({ editCategory: null })
     }
 
     render() {
@@ -44,8 +57,8 @@ export default class RaceView extends React.Component<Props, typeof InitialState
                 <p className="lead">{this.state.race.description}</p>
                 <hr />
                 <h3>Категории</h3>
-                {this.state.editCategory && <EditCategory category={this.state.editCategory}/>}
-                <Button onClick={this.addCategory}>Добавить категорию</Button>
+                {this.state.editCategory !== null && <EditCategory category={this.state.editCategory} onSubmit={this.saveCategory} />}
+                {this.state.editCategory === null && <Button onClick={this.addCategory}>Добавить категорию</Button>}
             </Col> </Row>
         )
     }

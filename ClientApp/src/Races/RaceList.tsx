@@ -1,5 +1,5 @@
 import { RouteComponentProps, Redirect } from "react-router";
-import { Race } from "./RaceSvc";
+import RaceService, { Race } from "./RaceSvc";
 import { Row, Table, Button, Alert, Spinner, ButtonGroup } from "react-bootstrap";
 import React, { SyntheticEvent } from 'react'
 
@@ -38,13 +38,8 @@ export default class RaceList extends React.Component<Props, typeof InitialState
         if (confirm(`Удалить гонку ${race.name}?`)) {
 
             try {
-                const resp = await fetch(`/api/races/${race.id}`, {
-                    method: 'delete'
-                });
-                if (resp.ok)
-                    this.loadRaces();
-                else
-                    throw `${resp.statusText}: ${resp.body}`;
+                await RaceService.DeleteRace(race.id) 
+                this.loadRaces();
             } catch (ex) {
                 this.setState({ error: ex.toString() })
             }

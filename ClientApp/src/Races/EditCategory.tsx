@@ -1,0 +1,86 @@
+import React from 'react'
+import { Category, Sex } from './RaceSvc';
+import { Formik } from 'formik';
+import { string as yupString, number as yupNumber, ref as yupRef, object as yupObject } from 'yup'
+import { Form, Col, Button } from 'react-bootstrap';
+import Feedback from 'react-bootstrap/Feedback';
+
+interface Props {
+    category: Category;
+    onSubmit: (category: Category) => void;
+}
+
+const schema = yupObject({
+    code: yupString().required('Код обязателен').length(3, 'Максимум 3 символа'),
+    name: yupString().required('Название обязательно'),
+    sex: yupString().required('Пол обязателен'),
+    minYearOfBirth: yupNumber().lessThan(yupRef('maxYearOfBirth'), "Мин. должен быть меньше макс."),
+    maxYearOfBirth: yupNumber()
+})
+
+const EditCategory: React.SFC<Props> = (props: Props) => {
+    return (
+        <Formik validationSchema={schema} onSubmit={props.onSubmit} initialValues={props.category} onReset={props.onSubmit}>
+            {({ handleSubmit, handleChange, values, touched, errors }) => (
+                <Form noValidate onSubmit={handleSubmit} className="bg-light">
+                    <h3>Новая категория</h3>
+                    <Form.Row>
+                        <Form.Group as={Col} controlId="code" >
+                            <Form.Label>Код</Form.Label>
+                            <Form.Control type="text" value={values.code} name="code" maxLength={3}
+                                onChange={handleChange} isInvalid={touched.code && !!errors.code} />
+                            <Feedback type="invalid">{errors.code}</Feedback>
+                        </Form.Group>
+                        <Form.Group as={Col} controlId="name" className="col-6">
+                            <Form.Label>Название</Form.Label>
+                            <Form.Control type="text" value={values.name} name="name" maxLength={50}
+                                onChange={handleChange} isInvalid={touched.name && !!errors.name} />
+                            <Feedback type="invalid">{errors.name}</Feedback>
+                        </Form.Group>
+                        <Form.Group as={Col} controlId="sex">
+                            <Form.Label>Пол</Form.Label>
+                            <Form.Row>
+                                <Form.Check type="radio" inline
+                                    checked={values.sex === Sex.Male}
+                                    value={Sex.Male}
+                                    name="sex"
+                                    label="Муж"
+                                    onChange={handleChange}
+                                    isInvalid={!!errors.sex}
+                                    id="sexMale" />
+                                <Form.Check type="radio" inline
+                                    checked={values.sex === Sex.Female}
+                                    value={Sex.Female}
+                                    name="sex"
+                                    label="Жен"
+                                    onChange={handleChange}
+                                    isInvalid={!!errors.sex}
+                                    id="sexMale" />
+                            </Form.Row>
+                            <Feedback type="invalid">{errors.sex}</Feedback>
+                        </Form.Group>
+                        <Form.Group>
+                            <Form.Label>Г.р. мин</Form.Label>
+                            <Form.Control type="number" value={values.minYearOfBirth && values.minYearOfBirth.toString() || ''}
+                                name="minYearOfBirth" min={1900} max={new Date().getFullYear()}
+                                onChange={handleChange} isInvalid={touched.minYearOfBirth && !!errors.minYearOfBirth} />
+                            <Feedback type="invalid">{errors.minYearOfBirth}</Feedback>
+                        </Form.Group>
+                        <Form.Group>
+                            <Form.Label>Г.р. макс</Form.Label>
+                            <Form.Control type="number" value={values.maxYearOfBirth && values.maxYearOfBirth.toString() || ''}
+                                name="maxYearOfBirth" min={1900} max={new Date().getFullYear()}
+                                onChange={handleChange} isInvalid={touched.maxYearOfBirth && !!errors.maxYearOfBirth} />
+                            <Feedback type="invalid">{errors.maxYearOfBirth}</Feedback>
+                        </Form.Group>
+                    </Form.Row>
+                    <Form.Row>
+                        <Button variant="primary" type="submit">Добавить категорию</Button>
+                        <Button variant="secondary" type="reset" className="ml-3">Отмена</Button>
+                    </Form.Row>
+                </Form>
+            )}
+        </Formik>)
+}
+
+export default EditCategory
