@@ -3,6 +3,7 @@ import React from "react";
 import { Form, Button, Alert } from "react-bootstrap";
 import { object as yupObject, string as yupString, number as yupNumber, date as yupDate } from 'yup'
 import { Formik } from 'formik'
+import RaceService from "./RaceService";
 
 
 const schema = yupObject({
@@ -43,16 +44,8 @@ export default class RaceAdd extends React.Component<Props, typeof InitialState>
     async onSubmit(values: FormValues) {
         this.setState({ sending: true });
         try {
-            const resp = await fetch('/api/races', {
-                method: 'post',
-                headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
-                body: JSON.stringify(values)
-            })
-            if (resp.ok)
-                this.setState({ done: true, sending: false })
-            else
-                throw `${resp.statusText} ${resp.body}`;
-
+            await RaceService.AddRace(values)
+            this.setState({ done: true, sending: false })
         } catch (ex) {
             this.setState({ error: ex.toString(), sending: false })
         }

@@ -1,5 +1,5 @@
 import { RouteComponentProps, Redirect } from "react-router";
-import RaceService, { Race } from "./RaceSvc";
+import RaceService, { Race } from "./RaceService";
 import { Row, Table, Button, Alert, Spinner, ButtonGroup } from "react-bootstrap";
 import React, { SyntheticEvent } from 'react'
 
@@ -24,12 +24,15 @@ export default class RaceList extends React.Component<Props, typeof InitialState
         this.loadRaces();
     }
 
-    loadRaces() {
+    async loadRaces() {
         this.setState({ races: null });
-        fetch('/api/races').then(r => r.json())
-            .then(races => this.setState({ races }))
-            .catch(error => this.setState({ error }))
+        try {
 
+            const races = await RaceService.GetRaces();
+            this.setState({ races })
+        } catch(ex) {
+            this.setState({ error: ex.toString() })
+        }
     }
 
     async deleteRace(race: Race, e: SyntheticEvent) {

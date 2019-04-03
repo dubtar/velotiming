@@ -13,7 +13,7 @@ namespace VeloTiming.Data
         public DateTime Date { get; set; }
         public RaceType Type { get; set; }
         public ICollection<Entry> Entries { get; set; }
-        public ICollection<Category> Categories { get; set; }
+        public ICollection<RaceCategory> Categories { get; set; }
 
     }
 

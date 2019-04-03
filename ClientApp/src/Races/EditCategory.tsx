@@ -1,17 +1,17 @@
 import React from 'react'
-import { Category, Sex } from './RaceSvc';
+import { RaceCategory, Sex } from './RaceService';
 import { Formik } from 'formik';
 import { string as yupString, number as yupNumber, ref as yupRef, object as yupObject } from 'yup'
 import { Form, Col, Button } from 'react-bootstrap';
 import Feedback from 'react-bootstrap/Feedback';
 
 interface Props {
-    category: Category;
-    onSubmit: (category: Category) => void;
+    category: RaceCategory;
+    onSubmit: (category?: RaceCategory) => void;
 }
 
 const schema = yupObject({
-    code: yupString().required('Код обязателен').length(3, 'Максимум 3 символа'),
+    code: yupString().required('Код обязателен').max(3, 'Максимум 3 символа'),
     name: yupString().required('Название обязательно'),
     sex: yupString().required('Пол обязателен'),
     minYearOfBirth: yupNumber().lessThan(yupRef('maxYearOfBirth'), "Мин. должен быть меньше макс."),
@@ -20,9 +20,9 @@ const schema = yupObject({
 
 const EditCategory: React.SFC<Props> = (props: Props) => {
     return (
-        <Formik validationSchema={schema} onSubmit={props.onSubmit} initialValues={props.category} onReset={props.onSubmit}>
-            {({ handleSubmit, handleChange, values, touched, errors }) => (
-                <Form noValidate onSubmit={handleSubmit} className="bg-light">
+        <Formik validationSchema={schema} onSubmit={props.onSubmit} initialValues={props.category} onReset={() => props.onSubmit(undefined)}>
+            {({ handleSubmit, handleChange, handleReset, values, touched, errors }) => (
+                <Form noValidate onSubmit={handleSubmit} onReset={handleReset} className="bg-light p-3">
                     <h3>Новая категория</h3>
                     <Form.Row>
                         <Form.Group as={Col} controlId="code" >
