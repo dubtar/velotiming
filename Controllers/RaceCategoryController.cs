@@ -1,10 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using VeloTiming.Data;
 
 namespace VeloTiming.Controllers
@@ -28,7 +27,7 @@ namespace VeloTiming.Controllers
         }
 
         [HttpPost("{id}")]
-        public async Task<IActionResult> Add(int id, RaceCategoryModel category)
+        public async Task<IActionResult> Add(int id, [FromBody] RaceCategoryModel category)
         {
             var race = await dataContext.Races.FindAsync(id);
             if (race == null) return NotFound();
@@ -40,12 +39,12 @@ namespace VeloTiming.Controllers
             return Ok(entity.Id);
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] RaceCategoryModel category)
+        [HttpPut]
+        public async Task<IActionResult> Update([FromBody] RaceCategoryModel category)
         {
-            var entity = await dataContext.RaceCategories.FindAsync(id);
-            if (entity == null) return NotFound();
             if (category == null) return BadRequest("Category not set");
+            var entity = await dataContext.RaceCategories.FindAsync(category.Id);
+            if (entity == null) return NotFound();
             category.UpdateEntity(entity);
             dataContext.RaceCategories.Update(entity);
             await dataContext.SaveChangesAsync();
@@ -62,7 +61,6 @@ namespace VeloTiming.Controllers
             return await Get(raceId);
         }
     }
-
     public class RaceCategoryModel
     {
         public RaceCategoryModel() { }
@@ -87,11 +85,9 @@ namespace VeloTiming.Controllers
         }
 
         public int Id { get; set; }
-        [Required]
         public string Name { get;  set; }
-        [Required]
         public string Code { get; set; }
-        [Required]
+
         public Sex Sex { get; set; }
         public int? MinYearOfBirth { get; set; }
         public int? MaxYearOfBirth { get; set; }

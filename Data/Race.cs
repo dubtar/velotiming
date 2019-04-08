@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace VeloTiming.Data
 {
@@ -17,7 +19,9 @@ namespace VeloTiming.Data
 
     }
 
-    public enum RaceType {
+    [JsonConverter(typeof(StringEnumConverter))]
+    public enum RaceType
+    {
         [Description("Групповая кругами")]
         Laps = 1,
         [Description("Разделка")]

@@ -2,7 +2,12 @@ export interface Race {
     id: number;
     name: string;
     date: string;
+    type: RaceType;
     description: string;
+}
+
+export enum RaceType {
+    Laps = 'Laps', TimeTrial = 'TimeTrial' // timetrial, criterium
 }
 
 export interface RaceCategory {
@@ -15,7 +20,7 @@ export interface RaceCategory {
 }
 
 export enum Sex {
-    Male = 'M', Female = 'F'
+    Male = 'Male', Female = 'Female'
 }
 
 const apiUrl = '/api/races/'
@@ -28,12 +33,20 @@ export default class RaceService {
     }
 
     static GetRace(raceId: number): Promise<Race> {
-        return fetch(apiUrl + raceId).then(this.checkStatus);
+        return fetch(apiUrl + raceId).then(this.checkStatus)
     }
 
     static AddRace(race: Partial<Race>): Promise<void> {
-        return fetch('/api/races', {
+        return fetch(apiUrl, {
             method: 'post',
+            headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+            body: JSON.stringify(race)
+        }).then(this.checkStatus)
+    }
+
+    static UpdateRace(race: Partial<Race>): Promise<void>  {
+        return fetch(apiUrl + race.id, {
+            method: 'put',
             headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
             body: JSON.stringify(race)
         }).then(this.checkStatus)
@@ -58,7 +71,7 @@ export default class RaceService {
     }
 
     static UpdateCategory(category: RaceCategory): Promise<void> {
-        return fetch(apiCatUrl + category.id, {
+        return fetch(apiCatUrl, {
             method: 'put',
             headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
             body: JSON.stringify(category)

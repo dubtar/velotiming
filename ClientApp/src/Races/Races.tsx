@@ -1,8 +1,8 @@
 import React from "react";
-import { Container, Row, Button, Table } from "react-bootstrap";
-import { Link, RouteComponentProps, Router, Route } from "react-router-dom";
+import { Container } from "react-bootstrap";
+import { RouteComponentProps, Route } from "react-router-dom";
 import RaceList from "./RaceList";
-import RaceAdd from "./RaceAdd";
+import RaceEdit from "./RaceEdit";
 import RaceView from "./RaceView";
 
 type Props = RouteComponentProps<{}>;
@@ -10,18 +10,9 @@ type Props = RouteComponentProps<{}>;
 const Races: React.SFC<Props> = (props) => {
     return (
         <Container>
-            <Route path={`${props.match.path}/add`} component={RaceAdd} />
+            <Route path={`${props.match.path}/add/:id?`} component={RaceEdit} />
             <Route path={`${props.match.path}/:id(\\d)`} component={RaceView} />
-            <Route path={props.match.path} exact={true} render={(props) =>
-                <>
-                    <RaceList {...props} />
-                    <Row>
-                        <Link to={`${props.match.url}/add`} className="btn btn-primary">
-                            Добавить гонку
-                        </Link>
-                    </Row>
-                </>
-            } />
+            <Route path={props.match.path} exact={true} component={RaceList} />
         </Container>);
 }
 

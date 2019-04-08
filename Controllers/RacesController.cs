@@ -30,14 +30,16 @@ namespace VeloTiming.Controllers
         }
 
         [HttpPost]
-        public async Task<int> CreateRace([FromBody]RaceModel race)
+        public async Task<IActionResult> CreateRace([FromBody]RaceModel race)
         {
-            if (race == null || !race.IsValid())
-                throw new Exception(race.Errrors());
+            if (race == null)
+                return BadRequest("Race not set");
+            if (!race.IsValid())
+                return BadRequest(race.Errrors());
             var entity = race.UpdateEntity(new Race());
             var added = dataContext.Races.Add(entity);
             await dataContext.SaveChangesAsync();
-            return entity.Id;
+            return Ok(entity.Id);
         }
 
         [HttpPut("{id}")]
@@ -72,12 +74,14 @@ namespace VeloTiming.Controllers
             Name = race.Name;
             Description = race.Description;
             Date = race.Date;
+            Type = race.Type;
         }
         public Race UpdateEntity(Race race)
         {
             race.Name = Name;
             race.Description = Description;
             race.Date = Date;
+            race.Type = Type;
             return race;
         }
         private void Validate()
@@ -102,5 +106,6 @@ namespace VeloTiming.Controllers
         public string Name { get; set; }
         public string Description { get; set; }
         public DateTime Date { get; set; }
+        public RaceType Type { get; set; }
     }
 }

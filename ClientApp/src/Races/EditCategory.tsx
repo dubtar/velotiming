@@ -14,8 +14,12 @@ const schema = yupObject({
     code: yupString().required('Код обязателен').max(3, 'Максимум 3 символа'),
     name: yupString().required('Название обязательно'),
     sex: yupString().required('Пол обязателен'),
-    minYearOfBirth: yupNumber().lessThan(yupRef('maxYearOfBirth'), "Мин. должен быть меньше макс."),
-    maxYearOfBirth: yupNumber()
+    minYearOfBirth: yupNumber().nullable()
+        .when('maxYearOfBirth', {
+            is: (m) => !!m,
+            then: yupNumber().lessThan(yupRef('maxYearOfBirth'), "Мин. должен быть меньше макс.")
+        }),
+    maxYearOfBirth: yupNumber().nullable()
 })
 
 const EditCategory: React.SFC<Props> = (props: Props) => {
@@ -28,7 +32,7 @@ const EditCategory: React.SFC<Props> = (props: Props) => {
                         <Form.Group as={Col} controlId="code" >
                             <Form.Label>Код</Form.Label>
                             <Form.Control type="text" value={values.code} name="code" maxLength={3}
-                                onChange={handleChange} isInvalid={touched.code && !!errors.code} />
+                                onChange={handleChange} isInvalid={touched.code && !!errors.code} autoFocus />
                             <Feedback type="invalid">{errors.code}</Feedback>
                         </Form.Group>
                         <Form.Group as={Col} controlId="name" className="col-6">

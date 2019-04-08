@@ -2,12 +2,12 @@ import { RouteComponentProps, Redirect } from "react-router";
 import RaceService, { Race } from "./RaceService";
 import { Row, Table, Button, Alert, Spinner, ButtonGroup } from "react-bootstrap";
 import React, { SyntheticEvent } from 'react'
+import { Link } from "react-router-dom";
 
 
 const InitialState = {
     error: null as string | null,
-    races: null as Race[] | null,
-    gotoRace: 0
+    races: null as Race[] | null
 }
 
 type Props = RouteComponentProps<{}>
@@ -30,7 +30,7 @@ export default class RaceList extends React.Component<Props, typeof InitialState
 
             const races = await RaceService.GetRaces();
             this.setState({ races })
-        } catch(ex) {
+        } catch (ex) {
             this.setState({ error: ex.toString() })
         }
     }
@@ -41,7 +41,7 @@ export default class RaceList extends React.Component<Props, typeof InitialState
         if (confirm(`Удалить гонку ${race.name}?`)) {
 
             try {
-                await RaceService.DeleteRace(race.id) 
+                await RaceService.DeleteRace(race.id)
                 this.loadRaces();
             } catch (ex) {
                 this.setState({ error: ex.toString() })
@@ -52,16 +52,16 @@ export default class RaceList extends React.Component<Props, typeof InitialState
     openRace(id: number, e: SyntheticEvent) {
         e.stopPropagation()
         e.preventDefault()
-        this.setState({ gotoRace: id })
+        this.props.history.push(`${this.props.match.path}/${id}`)
+        // this.setState({ gotoRace: id })
     }
 
     render() {
-        if (this.state.gotoRace > 0) return <Redirect push to={`${this.props.match.path}/${this.state.gotoRace}`} />;
         return (
             <Row>
                 {this.state.error && <Alert variant="danger">{this.state.error}</Alert>}
                 {this.state.races && (
-                    <>
+                    <Row>
                         <h1>Гонки</h1>
                         <Table striped bordered hover>
                             <thead><tr>
@@ -76,16 +76,20 @@ export default class RaceList extends React.Component<Props, typeof InitialState
                                         <td>{new Date(r.date).toLocaleDateString('ru')}</td>
                                         <td>{r.name}</td>
                                         <td>{r.description}</td>
-                                        <td>
+                                        <td onClick={(e) => { e.stopPropagation() }}>
                                             <ButtonGroup>
-                                                <Button variant="outline-primary" onClick={this.openRace.bind(this, r.id)}>Перейти</Button>
+                                                <Link className="btn btn-outline-primary" to={`${this.props.match.path}/${r.id}`}>Перейти</Link>
+                                                <Link to={`${this.props.match.path}/add/${r.id}`} className="btn btn-outline-warning">Изменить</Link>
                                                 <Button variant="outline-danger" onClick={this.deleteRace.bind(this, r)}>Удалить</Button>
                                             </ButtonGroup>
                                         </td>
                                     </tr>))}
                             </tbody>
                         </Table>
-                    </>)}
+                        <Link to={`${this.props.match.path}/add`} className="btn btn-primary">
+                            Добавить гонку
+                        </Link>
+                    </Row>)}
 
                 {this.state.races === null && <Spinner animation="border" className="m-3"></Spinner>}
             </Row>

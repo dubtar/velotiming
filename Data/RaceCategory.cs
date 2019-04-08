@@ -1,4 +1,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.Serialization;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace VeloTiming.Data
 {
@@ -16,6 +19,7 @@ namespace VeloTiming.Data
         public virtual Race Race { get; set; }
     }
 
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum Sex
     {
         Male = 'M', Female = 'F'
