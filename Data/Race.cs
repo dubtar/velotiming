@@ -16,6 +16,7 @@ namespace VeloTiming.Data
         public RaceType Type { get; set; }
         public ICollection<Entry> Entries { get; set; }
         public ICollection<RaceCategory> Categories { get; set; }
+        public ICollection<Rider> Riders { get; set; }
 
     }
 

@@ -5,5 +5,6 @@ namespace VeloTiming.Data {
         public DataContext(DbContextOptions<DataContext> options) : base(options) { }
         public DbSet<Race> Races { get; set; }
         public DbSet<RaceCategory> RaceCategories { get; set; }
+        public DbSet<Rider> Riders { get; set; }
     }
 }

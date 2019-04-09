@@ -4,6 +4,7 @@ import { Spinner, Alert, Row, Col, Button, Tab, Tabs } from "react-bootstrap";
 import RaceService, { Race, RaceCategory } from "./RaceService";
 import EditCategory from "./EditCategory";
 import CategoryList from "./CategoryList";
+import RidersList from "./RidersList";
 
 const InitialState = {
     raceId: 0,
@@ -41,7 +42,7 @@ export default class RaceView extends React.Component<Props, typeof InitialState
                         <CategoryList raceId={this.state.raceId} />
                     </Tab>
                     <Tab eventKey="riders" title="Участники">
-                        Участники
+                        <RidersList raceId={this.state.raceId} />
                     </Tab>
                 </Tabs>
             </Col> </Row>
