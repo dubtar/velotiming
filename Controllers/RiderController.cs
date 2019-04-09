@@ -34,7 +34,7 @@ namespace VeloTiming.Controllers
             var race = await dataContext.Races.FindAsync(id);
             if (race == null) return NotFound();
             var entity = rider.UpdateEntity(
-                new Rider { Race = race },
+                new Rider { Race = race, RaceId = race.Id },
                 dataContext
             );
             dataContext.Riders.Add(entity);

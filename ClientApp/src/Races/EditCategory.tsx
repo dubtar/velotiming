@@ -27,7 +27,7 @@ const EditCategory: React.SFC<Props> = (props: Props) => {
         <Formik validationSchema={schema} onSubmit={props.onSubmit} initialValues={props.category} onReset={() => props.onSubmit(undefined)}>
             {({ handleSubmit, handleChange, handleReset, values, touched, errors }) => (
                 <Form noValidate onSubmit={handleSubmit} onReset={handleReset} className="bg-light p-3">
-                    <h3>Новая категория</h3>
+                    <h3>{values.id ? 'Правка категории' : 'Новая категория'}</h3>
                     <Form.Row>
                         <Form.Group as={Col} controlId="code" >
                             <Form.Label>Код</Form.Label>
@@ -58,7 +58,7 @@ const EditCategory: React.SFC<Props> = (props: Props) => {
                                     name="sex"
                                     label="Жен"
                                     onChange={handleChange}
-                                    isInvalid={!!errors.sex}
+                                    isInvalid={touched.sex && !!errors.sex}
                                     id="sexMale" />
                             </Form.Row>
                             <Feedback type="invalid">{errors.sex}</Feedback>

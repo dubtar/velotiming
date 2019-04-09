@@ -1,11 +1,12 @@
 import React from "react";
-import RaceService, { Rider, Sex } from "./RaceService";
+import RaceService, { Rider, Sex, RaceCategory } from "./RaceService";
 import { Table, Row, Col, Alert, Spinner, Button, ButtonGroup } from "react-bootstrap";
 import EditRider from "./EditRider";
 
 const InitialState = {
     riders: null as Rider[] | null,
-    editRider: null as Partial<Rider> | null,
+    categories: null as RaceCategory[] | null,
+    editRider: null as Rider | null,
     error: null as string | null
 }
 
@@ -21,6 +22,9 @@ export default class RidersList extends React.Component<Props, typeof InitialSta
     }
 
     async componentDidMount() {
+        RaceService.GetRaceCategories(this.props.raceId).then(categories => {
+            this.setState({ categories })
+        }, error => { this.setState({ error }) });
         try {
             const riders = await RaceService.GetRiders(this.props.raceId)
             this.setState({ riders })
@@ -30,7 +34,7 @@ export default class RidersList extends React.Component<Props, typeof InitialSta
     }
 
     addRider() {
-        this.setState({ editRider: { id: 0 } })
+        this.setState({ editRider: { id: 0, firstName: '', lastName: '', sex: undefined } })
     }
 
     editRider(editRider: Rider) {
@@ -88,7 +92,7 @@ export default class RidersList extends React.Component<Props, typeof InitialSta
                                         <td>{`${rider.lastName} ${rider.firstName}`}</td>
                                         <td>{rider.sex == Sex.Female ? 'Ж' : 'М'}</td>
                                         <td>{rider.yearOfBirth}</td>
-                                        <td>{new Date().getFullYear() - rider.yearOfBirth}</td>
+                                        <td>{rider.yearOfBirth && (new Date().getFullYear() - rider.yearOfBirth)}</td>
                                         <td>{rider.category}</td>
                                         <td>{rider.city}</td>
                                         <td>{rider.team}</td>
@@ -102,7 +106,8 @@ export default class RidersList extends React.Component<Props, typeof InitialSta
                                 ))}
                             </tbody>
                         </Table>
-                        {this.state.editRider !== null && <EditRider rider={this.state.editRider} onSubmit={this.saveRider} />}
+                        {this.state.editRider !== null && this.state.categories &&
+                            <EditRider rider={this.state.editRider} categories={this.state.categories} onSubmit={this.saveRider} />}
                         {this.state.editRider === null && <Button onClick={this.addRider}>Добавить участника</Button>}
                     </>
                 )}

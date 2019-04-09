@@ -25,12 +25,12 @@ export interface Rider {
     id: number
     firstName: string
     lastName: string
-    sex: Sex
-    yearOfBirth: number
-    category: string
-    categoryName: string
-    city: string
-    team: string
+    sex?: Sex
+    yearOfBirth?: number
+    category?: string
+    categoryName?: string
+    city?: string
+    team?: string
 }
 
 export enum Sex {
