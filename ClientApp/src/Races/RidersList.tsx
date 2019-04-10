@@ -75,6 +75,9 @@ export default class RidersList extends React.Component<Props, typeof InitialSta
                 {!this.state.riders && <Spinner animation="grow" />}
                 {this.state.riders && (
                     <>
+                        {this.state.editRider !== null && this.state.categories &&
+                            <EditRider rider={this.state.editRider} categories={this.state.categories} onSubmit={this.saveRider} />}
+                        {this.state.editRider === null && <Button className="mv-3" onClick={this.addRider}>Добавить участника</Button>}
                         <Table striped hover bordered>
                             <thead><tr>
                                 <th>Имя</th>
@@ -106,9 +109,6 @@ export default class RidersList extends React.Component<Props, typeof InitialSta
                                 ))}
                             </tbody>
                         </Table>
-                        {this.state.editRider !== null && this.state.categories &&
-                            <EditRider rider={this.state.editRider} categories={this.state.categories} onSubmit={this.saveRider} />}
-                        {this.state.editRider === null && <Button onClick={this.addRider}>Добавить участника</Button>}
                     </>
                 )}
             </Col></Row>

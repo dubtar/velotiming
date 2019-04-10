@@ -18,10 +18,17 @@ const schema = yupObject({
     yearOfBirth: yupNumber().nullable().lessThan(new Date().getFullYear(), 'Не похож на г.р.').moreThan(1900, 'Не похож на г.р.')
 })
 
+const onChange = (e: React.ChangeEvent<HTMLInputElement>,
+    values: Rider,
+    handleChange: (e: React.ChangeEvent) => void,
+    setFieldValue: () => void) => {
+
+}
+
 const EditRider: React.SFC<Props> = (props) => {
     return (
         <Formik validationSchema={schema} onSubmit={props.onSubmit} initialValues={props.rider} onReset={() => props.onSubmit(undefined)}>
-            {({ handleSubmit, handleChange, handleReset, values, touched, errors }) => (
+            {({ handleSubmit, handleChange, handleReset, values, touched, errors, setFieldValue }) => (
                 <Form noValidate onSubmit={handleSubmit} onReset={handleReset} className="bg-light p-3">
                     <Form.Row>
                         <Form.Group as={Col} controlId="lastName" className="col-2">
@@ -61,18 +68,17 @@ const EditRider: React.SFC<Props> = (props) => {
                         <Form.Group as={Col} controlId="yearOfBirth">
                             <Form.Label>Г.р.</Form.Label>
                             <Form.Control type="number" value={values.yearOfBirth && values.yearOfBirth.toString() || ''}
-                                name="yearOfBirth" onChange={handleChange}
+                                name="yearOfBirth" onChange={onChangeAndSetDefaultCategory(handleChange, values, props, setFieldValue)}
                                 isInvalid={touched.yearOfBirth && !!errors.yearOfBirth} />
                             <Feedback type="invalid">{errors.yearOfBirth}</Feedback>
                         </Form.Group>
                         <Form.Group as={Col} controlId="category">
                             <Form.Label>Категория</Form.Label>
                             <Form.Control as="select" name="category" onChange={handleChange}
-                                isInvalid={touched.category && !!errors.category}>
-                                <option></option> 
+                                isInvalid={touched.category && !!errors.category} value={values.category}>
+                                <option></option>
                                 {props.categories.map(cat => (
-                                    <option selected={values.category === cat.code} key={cat.id} value={cat.code}>
-                                        {cat.name}</option>
+                                    <option key={cat.id} value={cat.code}>{cat.name}</option>
                                 ))}
                             </Form.Control>
                         </Form.Group>
@@ -88,3 +94,20 @@ const EditRider: React.SFC<Props> = (props) => {
 }
 
 export default EditRider
+
+function onChangeAndSetDefaultCategory(handleChange: (e: React.ChangeEvent<EventTarget>) => void, values: Rider,
+    props: Props, setFieldValue: (field: string, value: any) => void) {
+    return (e: React.ChangeEvent<EventTarget>) => {
+        handleChange(e);
+        const yearText = (e.target as HTMLInputElement).value;
+        const year = yearText && parseInt(yearText) || 0;
+        const sex = values.sex;
+        if (sex && year > 1900 && year < new Date().getFullYear() && !values.category) {
+            const category = props.categories.find(cat => cat.sex === sex &&
+                (!cat.minYearOfBirth || cat.minYearOfBirth <= year) &&
+                (!cat.maxYearOfBirth || cat.maxYearOfBirth >= year));
+            if (category)
+                setFieldValue('category', category.code);
+        }
+    };
+}
