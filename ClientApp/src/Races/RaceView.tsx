@@ -2,9 +2,9 @@ import { RouteComponentProps } from "react-router";
 import React from 'react'
 import { Spinner, Alert, Row, Col, Button, Tab, Tabs } from "react-bootstrap";
 import RaceService, { Race, RaceCategory } from "./RaceService";
-import EditCategory from "./EditCategory";
-import CategoryList from "./CategoryList";
-import RidersList from "./RidersList";
+import CategoryList from "./CategoryList"
+import RidersList from "./RidersList"
+import StartsList from './StartsList'
 
 const InitialState = {
     raceId: 0,
@@ -44,8 +44,11 @@ export default class RaceView extends React.Component<Props, typeof InitialState
                     <Tab eventKey="riders" title="Участники">
                         <RidersList raceId={this.state.raceId} />
                     </Tab>
+                    <Tab eventKey="starts" title="Заезды">
+                        <StartsList raceId={this.state.raceId} />
+                    </Tab>
                 </Tabs>
-            </Col> </Row>
+            </Col></Row>
         )
     }
 }

@@ -33,6 +33,14 @@ export interface Rider {
     team?: string
 }
 
+export interface Start {
+    id: number
+    name: string
+    plannedStart: string | null
+    realStart: string | null
+    end: string | null
+}
+
 export enum Sex {
     Male = 'Male', Female = 'Female'
 }
@@ -40,6 +48,7 @@ export enum Sex {
 const apiUrl = '/api/races/'
 const apiCatUrl = apiUrl + 'category/'
 const apiRiderUrl = apiUrl + 'rider/'
+const apiStartUrl = apiUrl + 'start/'
 
 export default class RaceService {
 
@@ -125,9 +134,34 @@ export default class RaceService {
         }).then(this.checkStatus)
     }
 
+    static GetStarts(raceId: number): Promise<Start[]> {
+        return fetch(apiStartUrl + raceId).then(this.checkStatus)
+    }
+
+    static AddStart(raceId: number, start: Start): Promise<Start[]> {
+        return fetch(apiStartUrl+raceId, {
+            method: 'post',
+            headers: { 'Content-Type': 'application/json'},
+            body: JSON.stringify(start)
+        }).then(this.checkStatus)
+    }
+
+    static UpdateStart(start: Start): Promise<Start[]> {
+        return fetch(apiStartUrl, {
+            method: 'put',
+            headers: { 'Content-Type': 'application/json'},
+            body: JSON.stringify(start)
+        }).then(this.checkStatus)
+    }
+
+    static DeleteStart(startId: number): Promise<Start[]> {
+        return fetch(apiStartUrl + startId, {
+            method: 'delete'
+        }).then(this.checkStatus)
+    }
+
     private static async checkStatus(resp: Response) {
         if (resp.ok) return resp.json()
         throw `${resp.statusText} ${await resp.text()}`
     }
-
 }

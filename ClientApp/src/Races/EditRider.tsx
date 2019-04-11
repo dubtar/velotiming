@@ -82,6 +82,18 @@ const EditRider: React.SFC<Props> = (props) => {
                                 ))}
                             </Form.Control>
                         </Form.Group>
+                        <Form.Group as={Col} controlId="city">
+                            <Form.Label>Город</Form.Label>
+                            <Form.Control type="text" maxLength={50} name="city" onChange={handleChange}
+                                isInvalid={touched.city && !!errors.city} value={values.city}></Form.Control>
+                            <Feedback type="invalid">{errors.city}</Feedback>
+                        </Form.Group>
+                        <Form.Group as={Col} controlId="team">
+                            <Form.Label>Команда</Form.Label>
+                            <Form.Control type="text" maxLength={50} name="team" onChange={handleChange}
+                                isInvalid={touched.team && !!errors.team} value={values.team}></Form.Control>
+                            <Feedback type="invalid">{errors.team}</Feedback>
+                        </Form.Group>
                     </Form.Row>
                     <Form.Row>
                         <Button variant="primary" type="submit">{`${values.id ? 'Сохранить' : 'Добавить'} участника`}</Button>

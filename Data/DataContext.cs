@@ -6,5 +6,6 @@ namespace VeloTiming.Data {
         public DbSet<Race> Races { get; set; }
         public DbSet<RaceCategory> RaceCategories { get; set; }
         public DbSet<Rider> Riders { get; set; }
+        public DbSet<Start> Starts { get; set; }
     }
 }

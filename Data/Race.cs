@@ -18,6 +18,8 @@ namespace VeloTiming.Data
         public ICollection<RaceCategory> Categories { get; set; }
         public ICollection<Rider> Riders { get; set; }
 
+        public ICollection<Start> Starts { get; set; }
+
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
