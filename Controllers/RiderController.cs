@@ -22,7 +22,7 @@ namespace VeloTiming.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id)
         {
-            var categories = await dataContext.Riders.Where(rc => rc.RaceId == id).ToArrayAsync();
+            var categories = await dataContext.Riders.Where(rc => rc.RaceId == id).Include(r => r.Category).ToArrayAsync();
             if (categories == null) return NotFound();
             return Ok(categories.Select(c => new RiderModel(c)));
         }
