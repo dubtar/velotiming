@@ -24,7 +24,8 @@ namespace VeloTiming
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
-            services.AddDbContext<Data.DataContext>(options => options.UseSqlite("Data Source=races.db"));
+            services.AddDbContext<Data.DataContext>(options => options.UseSqlite("Data Source=races.db")
+                .UseLazyLoadingProxies());
 
             services.AddSignalR();
 

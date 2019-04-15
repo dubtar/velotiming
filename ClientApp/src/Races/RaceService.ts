@@ -39,6 +39,7 @@ export interface Start {
     plannedStart: string | null
     realStart: string | null
     end: string | null
+    categories: RaceCategory[]
 }
 
 export enum Sex {

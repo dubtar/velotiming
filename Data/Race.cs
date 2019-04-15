@@ -14,11 +14,11 @@ namespace VeloTiming.Data
         public string Description { get; set; }
         public DateTime Date { get; set; }
         public RaceType Type { get; set; }
-        public ICollection<Entry> Entries { get; set; }
-        public ICollection<RaceCategory> Categories { get; set; }
-        public ICollection<Rider> Riders { get; set; }
+        public virtual ICollection<Entry> Entries { get; set; }
+        public virtual ICollection<RaceCategory> Categories { get; set; }
+        public virtual ICollection<Rider> Riders { get; set; }
 
-        public ICollection<Start> Starts { get; set; }
+        public virtual ICollection<Start> Starts { get; set; }
 
     }
 

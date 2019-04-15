@@ -11,6 +11,5 @@ VeloTiming
 ## Запуск
  1. Клонировать репозиторий `git clone https://github.com/dubtar/velotiming`
  2. Собрать `cd velotiming; dotnet build`
- 3. Запустить `dotnet watch run`
-
-
+ 3. Запустить `dotnet watch run` или `.\run.bat`
+ 4. Открыть в браузере `http://localhost:5000`

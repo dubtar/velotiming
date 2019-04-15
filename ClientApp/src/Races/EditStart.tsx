@@ -15,10 +15,31 @@ const schema = yupObject({
     name: yupString().required('Как-нибудь хоть назови'),
     plannedStart: yupString().nullable()
 })
+interface categoryValues { [key: number]: boolean }
+type formValues = Start & { categoryChecks: categoryValues }
 
 const EditStart: React.SFC<Props> = (props) => {
+    function onSubmit(values: formValues) {
+        var cats: RaceCategory[] = []
+        for (var key in values.categoryChecks) {
+            const id = parseInt(key)
+            const category = props.categories.find(c => c.id === id)
+            if (values.categoryChecks[key] && category) {
+                cats.push({ id: id, name: category.name, code: category.code })
+                console.log(`${key}: ${values.categoryChecks[key]} (${category.code})`)
+            }
+        }
+        const result = { ...values, categories: cats }
+        delete result.categoryChecks
+        props.onSubmit(result)
+    }
+
+    var catProps = {} as categoryValues
+    props.categories.forEach(cat => { catProps[cat.id] = props.start.categories.find(sc => sc.id === cat.id) != undefined })
+    var formValues: formValues = { ...props.start, categoryChecks: catProps }
+
     return (
-        <Formik validationSchema={schema} onSubmit={props.onSubmit} initialValues={props.start} onReset={() => props.onSubmit(undefined)}>
+        <Formik validationSchema={schema} onSubmit={onSubmit} initialValues={formValues} onReset={() => props.onSubmit(undefined)}>
             {({ handleSubmit, handleChange, handleReset, values, touched, errors }) => (
                 <Form noValidate onSubmit={handleSubmit} onReset={handleReset} className="bg-light p-3">
                     <Form.Row>
@@ -35,6 +56,16 @@ const EditStart: React.SFC<Props> = (props) => {
                                 name="plannedStart"
                                 onChange={handleChange} isInvalid={touched.plannedStart && !!errors.plannedStart} />
                             <Feedback type="invalid">{errors.plannedStart}</Feedback>
+                        </Form.Group>
+                        <Form.Group as={Col} controlId="categories">
+                            <Form.Label>Категории</Form.Label>
+                            <Form.Row>
+                                {props.categories.map(c => (
+                                    <Form.Check key={c.id} id={`categoryChecks.${c.id}`} name={`categoryChecks.${c.id}`}
+                                        checked={values.categoryChecks[c.id]}
+                                        custom inline label={`${c.code} ${c.name}`} onChange={handleChange} />
+                                ))}
+                            </Form.Row>
                         </Form.Group>
                     </Form.Row>
                     <Form.Row>

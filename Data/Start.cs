@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace VeloTiming.Data
@@ -13,5 +14,13 @@ namespace VeloTiming.Data
         public int RaceId { get; set; }
         [ForeignKey("RaceId")]
         public virtual Race Race { get; set; }
+        public virtual ICollection<StartCategory> Categories { get; set; }
+    }
+
+    public class StartCategory 
+    {
+        public int Id { get; set; }
+        public virtual RaceCategory Category { get; set; }
+        public virtual Start Start { get; set; }
     }
 }

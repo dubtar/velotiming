@@ -34,7 +34,7 @@ export default class StartsList extends React.Component<Props, typeof InitialSta
     }
 
     addStart() {
-        this.setState({ editStart: { id: 0, name: '', plannedStart: null, realStart: null, end: null } })
+        this.setState({ editStart: { id: 0, name: '', plannedStart: null, realStart: null, end: null, categories: [] } })
     }
 
     editStart(editStart: Start) {
@@ -79,6 +79,7 @@ export default class StartsList extends React.Component<Props, typeof InitialSta
                             <thead><tr>
                                 <th>Название</th>
                                 <th>Старт</th>
+                                <th>Категории</th>
                                 <th></th>
                             </tr></thead>
                             <tbody>
@@ -86,6 +87,7 @@ export default class StartsList extends React.Component<Props, typeof InitialSta
                                     <tr key={start.id}>
                                         <td>{start.name}</td>
                                         <td>{start.plannedStart && new Date(start.plannedStart).toLocaleTimeString('ru')}</td>
+                                        <td>{start.categories && start.categories.map(c => c.name + ' ')}</td>
                                         <td>
                                             <ButtonGroup>
                                                 <Button variant="outline-primary" onClick={this.editStart.bind(this, start)}>Изменить</Button>
