@@ -23,6 +23,7 @@ export interface RaceCategory {
 
 export interface Rider {
     id: number
+    number?: string;
     firstName: string
     lastName: string
     sex?: Sex
@@ -31,6 +32,7 @@ export interface Rider {
     categoryName?: string
     city?: string
     team?: string
+    rfids?: string
 }
 
 export interface Start {

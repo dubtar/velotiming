@@ -24,6 +24,5 @@ namespace VeloTiming.Hubs {
             mark = raceService.UpdateMark(mark);
             await Clients.Others.SendAsync("ResultUpdated", mark);
         }
-
     }
 }

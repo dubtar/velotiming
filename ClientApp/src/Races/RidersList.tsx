@@ -2,11 +2,13 @@ import React from "react";
 import RaceService, { Rider, Sex, RaceCategory } from "./RaceService";
 import { Table, Row, Col, Alert, Spinner, Button, ButtonGroup } from "react-bootstrap";
 import EditRider from "./EditRider";
+import RiderRfidEdit from "./RiderRfidEdit";
 
 const InitialState = {
     riders: null as Rider[] | null,
     categories: null as RaceCategory[] | null,
     editRider: null as Rider | null,
+    rfidRiderEdit: null as Rider | null,
     error: null as string | null
 }
 
@@ -19,6 +21,7 @@ export default class RidersList extends React.Component<Props, typeof InitialSta
         this.state = InitialState
         this.addRider = this.addRider.bind(this)
         this.saveRider = this.saveRider.bind(this)
+        this.saveRfid = this.saveRfid.bind(this)
     }
 
     async componentDidMount() {
@@ -39,6 +42,14 @@ export default class RidersList extends React.Component<Props, typeof InitialSta
 
     editRider(editRider: Rider) {
         this.setState({ editRider })
+    }
+
+    setRfid(rider: Rider) {
+        this.setState({ rfidRiderEdit: rider })
+    }
+
+    saveRfid(rfidId: string | undefined, riderId: number) {
+        // TODO
     }
 
     async deleteRider(riderId: number) {
@@ -69,6 +80,7 @@ export default class RidersList extends React.Component<Props, typeof InitialSta
     }
 
     render() {
+        var i = 1;
         return (
             <Row><Col>
                 {this.state.error && <Alert variant="danger">{this.state.error}</Alert>}
@@ -78,8 +90,11 @@ export default class RidersList extends React.Component<Props, typeof InitialSta
                         {this.state.editRider !== null && this.state.categories &&
                             <EditRider rider={this.state.editRider} categories={this.state.categories} onSubmit={this.saveRider} />}
                         {this.state.editRider === null && <Button className="mv-3" onClick={this.addRider}>Добавить участника</Button>}
+                        {this.state.rfidRiderEdit && <RiderRfidEdit rider={this.state.rfidRiderEdit} onSave={this.saveRfid} />}
                         <Table striped hover bordered>
                             <thead><tr>
+                                <th></th>
+                                <th>Номер</th>
                                 <th>Имя</th>
                                 <th>Пол</th>
                                 <th>Г.р.</th>
@@ -87,11 +102,14 @@ export default class RidersList extends React.Component<Props, typeof InitialSta
                                 <th>Категория</th>
                                 <th>Город</th>
                                 <th>Команда</th>
+                                <th>Rfid</th>
                                 <th></th>
                             </tr></thead>
                             <tbody>
                                 {this.state.riders.map(rider => (
                                     <tr key={rider.id}>
+                                        <td>{i++}</td>
+                                        <td>{rider.number}</td>
                                         <td>{`${rider.lastName} ${rider.firstName}`}</td>
                                         <td>{rider.sex == Sex.Female ? 'Ж' : 'М'}</td>
                                         <td>{rider.yearOfBirth}</td>
@@ -99,9 +117,11 @@ export default class RidersList extends React.Component<Props, typeof InitialSta
                                         <td>{rider.category}</td>
                                         <td>{rider.city}</td>
                                         <td>{rider.team}</td>
+                                        <td>{rider.rfids}</td>
                                         <td>
                                             <ButtonGroup>
-                                                <Button variant="outline-primary" onClick={this.editRider.bind(this, rider)}>Изменить</Button>
+                                                <Button variant="primary" onClick={this.setRfid.bind(this, rider)}>Прописать Чип</Button>
+                                                <Button variant="outline-warning" onClick={this.editRider.bind(this, rider)}>Изменить</Button>
                                                 <Button variant="outline-danger" onClick={this.deleteRider.bind(this, rider.id)}>Удалить</Button>
                                             </ButtonGroup>
                                         </td>

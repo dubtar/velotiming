@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace VeloTiming.Data
@@ -5,6 +6,7 @@ namespace VeloTiming.Data
     public class Rider 
     {
         public int Id { get; set; }
+        public string Number { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public Sex Sex { get; set; }
@@ -17,5 +19,6 @@ namespace VeloTiming.Data
 
         [ForeignKey("RaceId")]
         public virtual Race Race { get; set; }
+        public virtual ICollection<RiderRfid> Rfids { get; set; }
     }
 }

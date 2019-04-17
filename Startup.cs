@@ -1,3 +1,4 @@
+using System.Net.WebSockets;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -59,6 +60,7 @@ namespace VeloTiming
             app.UseSignalR(routes =>
             {
                 routes.MapHub<ResultHub>("/resultHub");
+                routes.MapHub<RfidHub>("/rfidHub");
             });
 
             app.UseMvc(routes =>
@@ -77,6 +79,13 @@ namespace VeloTiming
                     spa.UseReactDevelopmentServer(npmScript: "start");
                 }
             });
+
+
+            // listen to websocket to /rfid
+            // app.UseWebSockets().ListenRfidWebScoket();
+
+            // listen to rfid  on tcp
+            RfidListener.ListenTCP();
         }
     }
 }
