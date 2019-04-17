@@ -19,6 +19,7 @@ namespace VeloTiming.Data
 
         [ForeignKey("RaceId")]
         public virtual Race Race { get; set; }
+
         public virtual ICollection<RiderRfid> Rfids { get; set; }
     }
 }

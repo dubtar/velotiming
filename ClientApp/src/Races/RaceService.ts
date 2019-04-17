@@ -54,7 +54,6 @@ const apiRiderUrl = apiUrl + 'rider/'
 const apiStartUrl = apiUrl + 'start/'
 
 export default class RaceService {
-
     static GetRaces(): any {
         return fetch('/api/races').then(this.checkStatus)
     }
@@ -161,6 +160,14 @@ export default class RaceService {
         return fetch(apiStartUrl + startId, {
             method: 'delete'
         }).then(this.checkStatus)
+    }
+
+    static SetRiderRfid(riderId: number, rfidId: string): Promise<Rider[]> {
+        return fetch(apiRiderUrl + 'rfid/' + riderId, {
+            method: 'post',
+            headers: { 'Content-Type': 'application/json'},
+            body: '"' + rfidId + '"'
+        }).then(this.checkStatus);
     }
 
     private static async checkStatus(resp: Response) {

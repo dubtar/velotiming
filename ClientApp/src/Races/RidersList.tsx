@@ -48,8 +48,17 @@ export default class RidersList extends React.Component<Props, typeof InitialSta
         this.setState({ rfidRiderEdit: rider })
     }
 
-    saveRfid(rfidId: string | undefined, riderId: number) {
-        // TODO
+    async saveRfid(rfidId: string | undefined, riderId: number) {
+        if (rfidId) {
+            try {
+                const riders = await RaceService.SetRiderRfid(riderId, rfidId)
+                this.setState({ riders })
+            } catch (ex) {
+                this.setState({ error: ex.toString() })
+            }
+
+        }
+        this.setState({ rfidRiderEdit: null })
     }
 
     async deleteRider(riderId: number) {
@@ -82,56 +91,58 @@ export default class RidersList extends React.Component<Props, typeof InitialSta
     render() {
         var i = 1;
         return (
-            <Row><Col>
+            <>
                 {this.state.error && <Alert variant="danger">{this.state.error}</Alert>}
                 {!this.state.riders && <Spinner animation="grow" />}
                 {this.state.riders && (
                     <>
                         {this.state.editRider !== null && this.state.categories &&
                             <EditRider rider={this.state.editRider} categories={this.state.categories} onSubmit={this.saveRider} />}
-                        {this.state.editRider === null && <Button className="mv-3" onClick={this.addRider}>Добавить участника</Button>}
+                        {this.state.editRider === null && this.state.rfidRiderEdit === null && <Button className="mv-3" onClick={this.addRider}>Добавить участника</Button>}
                         {this.state.rfidRiderEdit && <RiderRfidEdit rider={this.state.rfidRiderEdit} onSave={this.saveRfid} />}
-                        <Table striped hover bordered>
-                            <thead><tr>
-                                <th></th>
-                                <th>Номер</th>
-                                <th>Имя</th>
-                                <th>Пол</th>
-                                <th>Г.р.</th>
-                                <th>Возраст</th>
-                                <th>Категория</th>
-                                <th>Город</th>
-                                <th>Команда</th>
-                                <th>Rfid</th>
-                                <th></th>
-                            </tr></thead>
-                            <tbody>
-                                {this.state.riders.map(rider => (
-                                    <tr key={rider.id}>
-                                        <td>{i++}</td>
-                                        <td>{rider.number}</td>
-                                        <td>{`${rider.lastName} ${rider.firstName}`}</td>
-                                        <td>{rider.sex == Sex.Female ? 'Ж' : 'М'}</td>
-                                        <td>{rider.yearOfBirth}</td>
-                                        <td>{rider.yearOfBirth && (new Date().getFullYear() - rider.yearOfBirth)}</td>
-                                        <td>{rider.category}</td>
-                                        <td>{rider.city}</td>
-                                        <td>{rider.team}</td>
-                                        <td>{rider.rfids}</td>
-                                        <td>
-                                            <ButtonGroup>
-                                                <Button variant="primary" onClick={this.setRfid.bind(this, rider)}>Прописать Чип</Button>
-                                                <Button variant="outline-warning" onClick={this.editRider.bind(this, rider)}>Изменить</Button>
-                                                <Button variant="outline-danger" onClick={this.deleteRider.bind(this, rider.id)}>Удалить</Button>
-                                            </ButtonGroup>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </Table>
+                        <Row><Col>
+                            <Table striped hover bordered>
+                                <thead><tr>
+                                    <th></th>
+                                    <th>Номер</th>
+                                    <th>Имя</th>
+                                    <th>Пол</th>
+                                    <th>Г.р.</th>
+                                    <th>Возраст</th>
+                                    <th>Категория</th>
+                                    <th>Город</th>
+                                    <th>Команда</th>
+                                    <th>Rfid</th>
+                                    <th></th>
+                                </tr></thead>
+                                <tbody>
+                                    {this.state.riders.map(rider => (
+                                        <tr key={rider.id}>
+                                            <td>{i++}</td>
+                                            <td>{rider.number}</td>
+                                            <td>{`${rider.lastName} ${rider.firstName}`}</td>
+                                            <td>{rider.sex == Sex.Female ? 'Ж' : 'М'}</td>
+                                            <td>{rider.yearOfBirth}</td>
+                                            <td>{rider.yearOfBirth && (new Date().getFullYear() - rider.yearOfBirth)}</td>
+                                            <td>{rider.category}</td>
+                                            <td>{rider.city}</td>
+                                            <td>{rider.team}</td>
+                                            <td>{rider.rfids}</td>
+                                            <td>
+                                                <ButtonGroup>
+                                                    <Button variant="primary" onClick={this.setRfid.bind(this, rider)}>Прописать Чип</Button>
+                                                    <Button variant="outline-warning" onClick={this.editRider.bind(this, rider)}>Изменить</Button>
+                                                    <Button variant="outline-danger" onClick={this.deleteRider.bind(this, rider.id)}>Удалить</Button>
+                                                </ButtonGroup>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </Table>
+                        </Col></Row>
                     </>
                 )}
-            </Col></Row>
+            </>
         )
     }
 

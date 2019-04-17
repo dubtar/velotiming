@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Net.WebSockets;
@@ -103,29 +104,40 @@ namespace VeloTiming
                 // more data.  
                 content = state.sb.ToString();
                 int ind;
-                while((ind = content.IndexOf('}') > -1))
+                while ((ind = content.IndexOf('}')) > -1)
                 {
-                    var message = content
-                    // Do the thing
-                    for(int i = 0; i < messages. AsMemory var m in messages) {
-                        var message = m + "}";
-                        try {
+                    var message = content.Substring(0, ind + 1);
+                    content = content.Substring(ind + 1);
+                    using (var log = File.AppendText("rfid.log"))
+                        log.WriteLine($"{DateTime.Now.ToLongTimeString()}:{message.Replace('\n', ' ').Replace("\r", "")}");
+                    try
+                    {
+                        int start = message.IndexOf('{');
+                        if (start >= 0)
+                        {
+                            message = message.Substring(start);
                             var data = JsonConvert.DeserializeObject<RfidData>(message);
-                        } catch {}
+                            if (data != null && !string.IsNullOrEmpty(data.RFIDStamp))
+                                SendRfidId(data.RFIDStamp);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
                     }
                 }
-                else
-                {
-                    // Not all data received. Get more.  
-                    handler.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
-                    new AsyncCallback(ReadCallback), state);
-                }
+                state.sb = new StringBuilder(content);
+                // Not all data received. Get more.  
+                handler.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
+                new AsyncCallback(ReadCallback), state);
             }
         }
 
-
-        
-
+        private static async void SendRfidId(string rfidId)
+        {
+            var hubContext = Startup.GetRequiredService<IHubContext<RfidHub>>();
+            await hubContext.Clients.All.SendAsync("RfidFound", rfidId);
+        }
 
         public static void ListenRfidWebScoket(this IApplicationBuilder app)
         {

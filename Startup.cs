@@ -1,3 +1,4 @@
+using System;
 using System.Net.WebSockets;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -81,11 +82,19 @@ namespace VeloTiming
             });
 
 
+
+            serviceProvider = app.ApplicationServices;
             // listen to websocket to /rfid
             // app.UseWebSockets().ListenRfidWebScoket();
 
             // listen to rfid  on tcp
             RfidListener.ListenTCP();
+        }
+
+        private static IServiceProvider serviceProvider;
+        internal static T GetRequiredService<T>()
+        {
+            return serviceProvider.GetRequiredService<T>();
         }
     }
 }

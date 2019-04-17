@@ -12,6 +12,7 @@ interface Props {
 }
 
 const schema = yupObject({
+    number: yupString().nullable(),
     firstName: yupString().required('Фамилия обязательна'),
     lastName: yupString().required('Имя обязательно'),
     sex: yupString().required('Пол обязателен'),
@@ -31,6 +32,12 @@ const EditRider: React.SFC<Props> = (props) => {
             {({ handleSubmit, handleChange, handleReset, values, touched, errors, setFieldValue }) => (
                 <Form noValidate onSubmit={handleSubmit} onReset={handleReset} className="bg-light p-3">
                     <Form.Row>
+                        <Form.Group as={Col} controlId="number" className="col-2">
+                            <Form.Label>Номер</Form.Label>
+                            <Form.Control type="text" value={values.number} name="number" maxLength={50}
+                                onChange={handleChange} isInvalid={touched.number && !!errors.number} />
+                            <Feedback type="invalid">{errors.number}</Feedback>
+                        </Form.Group>
                         <Form.Group as={Col} controlId="lastName" className="col-2">
                             <Form.Label>Фамилия</Form.Label>
                             <Form.Control type="text" value={values.lastName} name="lastName" maxLength={50}

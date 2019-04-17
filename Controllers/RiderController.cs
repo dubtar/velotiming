@@ -60,9 +60,29 @@ namespace VeloTiming.Controllers
             var entity = await dataContext.Riders.FindAsync(id);
             if (entity == null) return NotFound();
             int raceId = entity.RaceId;
+            dataContext.RiderRfid.RemoveRange(entity.Rfids);
             dataContext.Riders.Remove(entity);
             await dataContext.SaveChangesAsync();
             return await Get(raceId);
+        }
+        [HttpPost("rfid/{id}")]
+        public async Task<IActionResult> SetRfid(int id, [FromBody]string rfidId)
+        {
+            var rider = await dataContext.Riders.FindAsync(id);
+            if (rider == null) return NotFound();
+            if (string.IsNullOrEmpty(rfidId)) return BadRequest("Rfid is not set");
+            var rfid = await dataContext.RiderRfid.FirstOrDefaultAsync(r => r.RfidId == rfidId);
+            if (rfid != null)
+            {
+                if (rfid.RiderId != id)
+                    dataContext.RiderRfid.Remove(rfid);
+            }
+            else
+            {
+                rider.Rfids.Add(new RiderRfid{ Rider = rider, RfidId = rfidId });
+            }
+            await dataContext.SaveChangesAsync();
+            return await Get(rider.RaceId);
         }
     }
 
@@ -72,6 +92,7 @@ namespace VeloTiming.Controllers
         public RiderModel(Rider rider)
         {
             this.Id = rider.Id;
+            this.Number = rider.Number;
             this.FirstName = rider.FirstName;
             this.LastName = rider.LastName;
             this.Sex = rider.Sex;
@@ -80,10 +101,12 @@ namespace VeloTiming.Controllers
             this.CategoryName = rider.Category?.Name;
             this.City = rider.City;
             this.Team = rider.Team;
+            this.Rfids = string.Join(", ", rider.Rfids.Select(r => r.RfidId));
         }
 
         internal Rider UpdateEntity(Rider rider, DataContext dataContext)
         {
+            rider.Number = Number;
             rider.FirstName = FirstName;
             rider.LastName = LastName;
             rider.Sex = Sex;
@@ -91,11 +114,13 @@ namespace VeloTiming.Controllers
             if (rider.RaceId <= 0) throw new Exception("Rider's race Id is not set");
             rider.Category = string.IsNullOrEmpty(Category) ? null :
                 dataContext.RaceCategories.FirstOrDefault(c => c.RaceId == rider.RaceId && c.Code == Category);
+            // rfids are not set here. They have extra method
             rider.City = City;
             rider.Team = Team;
             return rider;
         }
         public int Id { get; set; }
+        public string Number { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public Sex Sex { get; set; }
@@ -104,6 +129,7 @@ namespace VeloTiming.Controllers
         public string CategoryName { get; set; }
         public string City { get; set; }
         public string Team { get; set; }
+        public string Rfids { get; set; }
 
     }
 }
