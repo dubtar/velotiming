@@ -18,7 +18,7 @@ export interface RaceInfo {
 
 export default class Service {
     private static inited = false;
-    public static init() {
+    public static Connect() {
         if (Service.inited) return;
         else Service.inited = true;
 
@@ -44,6 +44,16 @@ export default class Service {
         Service.sRconnection.start().catch(err => console.error(err))
     }
 
+    public static Disconnect() {
+        if (!Service.inited) return;
+        else Service.inited = false;
+
+        if (Service.sRconnection) {
+            Service.sRconnection.stop();
+            delete Service.sRconnection;
+        }
+    }
+
     private static sRconnection: signalR.HubConnection | undefined;
     private static marks: Mark[] = [];
     public static readonly Marks = new Subject<Mark[]>();
@@ -56,9 +66,13 @@ export default class Service {
         return Service.race = await r.json();
     }
 
-    public static async StartRace() {
-        if (Service.race && Service.race.start) return Promise.resolve(Service.race);
-        if (Service.sRconnection) Service.sRconnection.send('RaceStarted');
+    public static async Start(raceId: number) {
+        await fetch('/api/start', { method: 'post' }).then(this.checkStatus)
+    }
+
+    public static StartRace(): void {
+        if ((!Service.race || !Service.race.start) && Service.sRconnection)
+            Service.sRconnection.send('RaceStarted');
     }
 
     public static async GetMarks() {
@@ -74,7 +88,7 @@ export default class Service {
     public static AddTime(source: string) {
         // find first mark before setted with time not set
         let mark;
-        for(let i = Service.marks.length -1; i>=0; i--) {
+        for (let i = Service.marks.length - 1; i >= 0; i--) {
             if (Service.marks[i].time) break;
             mark = Service.marks[i];
         }
@@ -90,7 +104,7 @@ export default class Service {
 
     public static AddNumber(number: string, numberSource: string) {
         let mark;
-        for(let i = Service.marks.length -1; i>=0; i--) {
+        for (let i = Service.marks.length - 1; i >= 0; i--) {
             if (Service.marks[i].number) break;
             mark = Service.marks[i];
         }
@@ -128,4 +142,10 @@ export default class Service {
             return v.toString(16);
         });
     }
+
+    private static async checkStatus(resp: Response) {
+        if (resp.ok) return resp.json()
+        throw `${resp.statusText} ${await resp.text()}`
+    }
+
 }

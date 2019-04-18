@@ -2,12 +2,15 @@ import React from "react";
 import RaceService, { Start, Sex, RaceCategory } from "./RaceService";
 import { Table, Row, Col, Alert, Spinner, Button, ButtonGroup } from "react-bootstrap";
 import EditStart from "./EditStart";
+import { Redirect } from "react-router";
+import Svc from '../svc'
 
 const InitialState = {
     starts: null as Start[] | null,
     categories: null as RaceCategory[] | null,
     editStart: null as Start | null,
-    error: null as string | null
+    error: null as string | null,
+    startRaceId: null as number | null
 }
 
 type Props = { raceId: number }
@@ -52,6 +55,11 @@ export default class StartsList extends React.Component<Props, typeof InitialSta
             }
     }
 
+    async start(start: Start) {
+        await Svc.Start(start.id);
+        this.setState({ startRaceId : start.id });
+    }
+
     async saveStart(start?: Start) {
         try {
             if (start) {
@@ -69,6 +77,7 @@ export default class StartsList extends React.Component<Props, typeof InitialSta
     }
 
     render() {
+        if (this.state.startRaceId) return <Redirect to="/run" />
         return (
             <Row><Col>
                 {this.state.error && <Alert variant="danger">{this.state.error}</Alert>}
@@ -90,6 +99,7 @@ export default class StartsList extends React.Component<Props, typeof InitialSta
                                         <td>{start.categories && start.categories.map(c => c.name + ' ')}</td>
                                         <td>
                                             <ButtonGroup>
+                                                <Button variant="success" onClick={this.start.bind(this, start)}>Начать</Button>
                                                 <Button variant="outline-primary" onClick={this.editStart.bind(this, start)}>Изменить</Button>
                                                 <Button variant="outline-danger" onClick={this.deleteStart.bind(this, start.id)}>Удалить</Button>
                                             </ButtonGroup>
