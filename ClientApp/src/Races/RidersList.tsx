@@ -108,8 +108,8 @@ export default class RidersList extends React.Component<Props, typeof InitialSta
                                     <th>Имя</th>
                                     <th>Пол</th>
                                     <th>Г.р.</th>
-                                    <th>Возраст</th>
-                                    <th>Категория</th>
+                                    <th>Возр.</th>
+                                    <th>Кат.</th>
                                     <th>Город</th>
                                     <th>Команда</th>
                                     <th>Rfid</th>
@@ -127,11 +127,12 @@ export default class RidersList extends React.Component<Props, typeof InitialSta
                                             <td>{rider.category}</td>
                                             <td>{rider.city}</td>
                                             <td>{rider.team}</td>
-                                            <td>{rider.rfids}</td>
+                                            <td>{rider.rfids && (rider.rfids.length < 9 && rider.rfids ||
+                                                    `${rider.rfids.substring(0, 3)}...${rider.rfids.substring(rider.rfids.length - 3)}`)}</td>
                                             <td>
                                                 <ButtonGroup>
-                                                    <Button variant="primary" onClick={this.setRfid.bind(this, rider)}>Прописать Чип</Button>
-                                                    <Button variant="outline-warning" onClick={this.editRider.bind(this, rider)}>Изменить</Button>
+                                                    <Button variant="primary" onClick={this.setRfid.bind(this, rider)}>Чип</Button>
+                                                    <Button variant="outline-primary" onClick={this.editRider.bind(this, rider)}>Изменить</Button>
                                                     <Button variant="outline-danger" onClick={this.deleteRider.bind(this, rider.id)}>Удалить</Button>
                                                 </ButtonGroup>
                                             </td>
