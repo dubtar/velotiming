@@ -26,8 +26,12 @@ namespace VeloTiming
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
-            services.AddDbContext<Data.DataContext>(options => options.UseSqlite("Data Source=races.db")
-                .UseLazyLoadingProxies());
+            if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
+                services.AddDbContext<Data.DataContext>(options => options.UseMySQL(Configuration.GetConnectionString("MYSQLCONNSTR_localdb"))
+                    .UseLazyLoadingProxies());
+            else
+                services.AddDbContext<Data.DataContext>(options => options.UseSqlite("Data Source=races.db")
+                    .UseLazyLoadingProxies());
 
             services.AddSignalR();
 
