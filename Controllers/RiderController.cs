@@ -22,7 +22,8 @@ namespace VeloTiming.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id)
         {
-            var categories = await dataContext.Riders.Where(rc => rc.RaceId == id).Include(r => r.Category).ToArrayAsync();
+            var categories = await dataContext.Riders.Where(rc => rc.RaceId == id).Include(r => r.Category).Include(r => r.Rfids)
+                .ToArrayAsync();
             if (categories == null) return NotFound();
             return Ok(categories.Select(c => new RiderModel(c)));
         }
@@ -79,7 +80,7 @@ namespace VeloTiming.Controllers
             }
             else
             {
-                rider.Rfids.Add(new RiderRfid{ Rider = rider, RfidId = rfidId });
+                rider.Rfids.Add(new RiderRfid { Rider = rider, RfidId = rfidId });
             }
             await dataContext.SaveChangesAsync();
             return await Get(rider.RaceId);

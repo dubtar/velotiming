@@ -9,8 +9,8 @@ using VeloTiming.Data;
 namespace veloTiming.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20190417170955_AddRiderNumber")]
-    partial class AddRiderNumber
+    [Migration("20190423080726_Initial")]
+    partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -167,9 +167,9 @@ namespace veloTiming.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<int?>("CategoryId");
+                    b.Property<int>("CategoryId");
 
-                    b.Property<int?>("StartId");
+                    b.Property<int>("StartId");
 
                     b.HasKey("Id");
 
@@ -231,11 +231,13 @@ namespace veloTiming.Migrations
                 {
                     b.HasOne("VeloTiming.Data.RaceCategory", "Category")
                         .WithMany()
-                        .HasForeignKey("CategoryId");
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("VeloTiming.Data.Start", "Start")
                         .WithMany("Categories")
-                        .HasForeignKey("StartId");
+                        .HasForeignKey("StartId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 #pragma warning restore 612, 618
         }

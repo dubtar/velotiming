@@ -41,8 +41,9 @@ namespace VeloTiming
         {
             int port = 5080;
 
-            IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
-            IPEndPoint localEndPoint = new IPEndPoint(ipHostInfo.AddressList[0], port);
+            // IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
+            // IPEndPoint localEndPoint = new IPEndPoint(ipHostInfo.AddressList[0], port);
+            IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, port);
 
             Socket listener = new Socket(localEndPoint.Address.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             try

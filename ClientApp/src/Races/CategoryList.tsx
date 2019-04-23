@@ -1,6 +1,6 @@
 import React from 'react'
 import RaceService, { RaceCategory, Sex } from './RaceService';
-import { Table, Button, ButtonGroup, Spinner } from 'react-bootstrap';
+import { Table, Button, ButtonGroup, Spinner, Alert } from 'react-bootstrap';
 import EditCategory from './EditCategory';
 
 const InitialState = {
@@ -23,7 +23,7 @@ export default class CategoryList extends React.Component<Props, typeof InitialS
     async componentDidMount() {
         try {
             const categories = await RaceService.GetRaceCategories(this.props.raceId)
-            this.setState({ categories })
+            this.setState({ categories, error: undefined })
         } catch (ex) {
             this.setState({ error: ex.toString() })
         }
@@ -41,7 +41,7 @@ export default class CategoryList extends React.Component<Props, typeof InitialS
         if (confirm('Удалить категорию?'))
             try {
                 const categories = await RaceService.DeleteCategory(categoryId);
-                this.setState({ categories })
+                this.setState({ categories, error: undefined })
 
             } catch (ex) {
                 this.setState({ error: ex.toString() })
@@ -58,7 +58,7 @@ export default class CategoryList extends React.Component<Props, typeof InitialS
                     await RaceService.AddCategory(this.props.raceId, category)
                 }
                 const categories = await RaceService.GetRaceCategories(this.props.raceId)
-                this.setState({ categories })
+                this.setState({ categories, error: undefined })
             }
         } catch (ex) {
             this.setState({ error: ex.toString() })
@@ -100,6 +100,7 @@ export default class CategoryList extends React.Component<Props, typeof InitialS
                 </Table>)}
                 {this.state.editCategory !== null && <EditCategory category={this.state.editCategory} onSubmit={this.saveCategory} />}
                 {this.state.editCategory === null && <Button onClick={this.addCategory}>Добавить категорию</Button>}
+                {this.state.error && <Alert variant="danger">{this.state.error}</Alert>}
             </>
         )
     }

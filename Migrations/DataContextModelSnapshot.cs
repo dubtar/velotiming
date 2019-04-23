@@ -165,9 +165,9 @@ namespace veloTiming.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<int?>("CategoryId");
+                    b.Property<int>("CategoryId");
 
-                    b.Property<int?>("StartId");
+                    b.Property<int>("StartId");
 
                     b.HasKey("Id");
 
@@ -229,11 +229,13 @@ namespace veloTiming.Migrations
                 {
                     b.HasOne("VeloTiming.Data.RaceCategory", "Category")
                         .WithMany()
-                        .HasForeignKey("CategoryId");
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("VeloTiming.Data.Start", "Start")
                         .WithMany("Categories")
-                        .HasForeignKey("StartId");
+                        .HasForeignKey("StartId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 #pragma warning restore 612, 618
         }
