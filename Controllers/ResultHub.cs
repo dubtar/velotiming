@@ -1,12 +1,13 @@
 using Microsoft.AspNetCore.SignalR;
 using System.Threading.Tasks;
 using VeloTiming.Data;
+using VeloTiming.Services;
 
 namespace VeloTiming.Hubs {
     public class ResultHub : Hub
     {
-        public readonly IRaceService raceService ;
-        public ResultHub(IRaceService raceService)
+        public readonly IMainService raceService ;
+        public ResultHub(IMainService raceService)
         {
             this.raceService = raceService;
         }

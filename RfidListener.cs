@@ -9,9 +9,12 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
+using VeloTiming.Data;
 using VeloTiming.Hubs;
+using VeloTiming.Services;
 
 namespace VeloTiming
 {
@@ -39,7 +42,7 @@ namespace VeloTiming
         private static ManualResetEvent allDone = new ManualResetEvent(false);
         private static void StartListening()
         {
-            int port = 5080;
+            int port = 12345;
 
             // IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
             // IPEndPoint localEndPoint = new IPEndPoint(ipHostInfo.AddressList[0], port);
@@ -136,8 +139,16 @@ namespace VeloTiming
 
         private static async void SendRfidId(string rfidId)
         {
-            var hubContext = Startup.GetRequiredService<IHubContext<RfidHub>>();
-            await hubContext.Clients.All.SendAsync("RfidFound", rfidId);
+            var serviceScopeFactory = Startup.GetRequiredService<IServiceScopeFactory>();
+            using(var scope = serviceScopeFactory.CreateScope()) {
+                var hubContext = scope.ServiceProvider.GetRequiredService<IHubContext<RfidHub>>();
+                var sendRfid = hubContext.Clients.All.SendAsync("RfidFound", rfidId);
+                var numberService = scope.ServiceProvider.GetService<INumberService>();
+                var number = await numberService.GetNumberByRfid(rfidId);
+                if (number != null)
+                    await hubContext.Clients.All.SendAsync("NumberFound", number.Id);
+                await sendRfid;
+            }
         }
 
         public static void ListenRfidWebScoket(this IApplicationBuilder app)

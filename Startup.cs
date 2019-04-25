@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using VeloTiming.Hubs;
+using VeloTiming.Services;
 
 namespace VeloTiming
 {
@@ -30,14 +31,15 @@ namespace VeloTiming
             //     services.AddDbContext<Data.DataContext>(options => options.UseMySQL(Configuration.GetConnectionString("MYSQLCONNSTR_localdb"))
             //         .UseLazyLoadingProxies());
             // else
-            services.AddDbContext<Data.DataContext>(options =>
+            services.AddDbContextPool<Data.DataContext>(options =>
                 options.UseSqlite(Configuration.GetConnectionString("Sqlite"))
                 .UseLazyLoadingProxies()
                 );
 
             services.AddSignalR();
 
-            services.AddTransient(typeof(IRaceService), typeof(RaceService));
+            services.AddTransient(typeof(IMainService), typeof(MainService));
+            services.AddTransient(typeof(INumberService), typeof(NumberService));
 
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration =>

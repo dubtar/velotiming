@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using VeloTiming.Data;
 
-namespace VeloTiming
+namespace VeloTiming.Services
 {
 
-    public interface IRaceService
+    public interface IMainService
     {
         RaceInfo StartRace();
         RaceInfo GetRaceInfo();
@@ -14,7 +14,7 @@ namespace VeloTiming
         Mark UpdateMark(Mark mark);
     }
 
-    public class RaceService : IRaceService
+    public class MainService : IMainService
     {
         // TODO: store this in db
         private static RaceInfo Race;
