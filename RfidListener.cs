@@ -137,7 +137,8 @@ namespace VeloTiming
                     handler.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
                     new AsyncCallback(ReadCallback), state);
                 }
-            catch () { }
+            }
+            catch { }
         }
 
         private static async void SendRfidId(string rfidId)
