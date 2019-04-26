@@ -88,59 +88,63 @@ namespace VeloTiming
         }
         private static void ReadCallback(IAsyncResult ar)
         {
-            String content = String.Empty;
-
-            // Retrieve the state object and the handler socket  
-            // from the asynchronous state object.  
-            StateObject state = (StateObject)ar.AsyncState;
-            Socket handler = state.workSocket;
-
-            // Read data from the client socket.   
-            int bytesRead = handler.EndReceive(ar);
-
-            if (bytesRead > 0)
+            try
             {
-                // There  might be more data, so store the data received so far.  
-                state.sb.Append(Encoding.ASCII.GetString(
-                    state.buffer, 0, bytesRead));
+                String content = String.Empty;
 
-                // Check for end-of-file tag. If it is not there, read   
-                // more data.  
-                content = state.sb.ToString();
-                int ind;
-                while ((ind = content.IndexOf('}')) > -1)
+                // Retrieve the state object and the handler socket  
+                // from the asynchronous state object.  
+                StateObject state = (StateObject)ar.AsyncState;
+                Socket handler = state.workSocket;
+
+                // Read data from the client socket.   
+                int bytesRead = handler.EndReceive(ar);
+
+                if (bytesRead > 0)
                 {
-                    var message = content.Substring(0, ind + 1);
-                    content = content.Substring(ind + 1);
-                    using (var log = File.AppendText("rfid.log"))
-                        log.WriteLine($"{DateTime.Now.ToLongTimeString()}:{message.Replace('\n', ' ').Replace("\r", "")}");
-                    try
+                    // There  might be more data, so store the data received so far.  
+                    state.sb.Append(Encoding.ASCII.GetString(
+                        state.buffer, 0, bytesRead));
+
+                    // Check for end-of-file tag. If it is not there, read   
+                    // more data.  
+                    content = state.sb.ToString();
+                    int ind;
+                    while ((ind = content.IndexOf('}')) > -1)
                     {
-                        int start = message.IndexOf('{');
-                        if (start >= 0)
+                        var message = content.Substring(0, ind + 1);
+                        content = content.Substring(ind + 1);
+                        using (var log = File.AppendText("rfid.log"))
+                            log.WriteLine($"{DateTime.Now.ToLongTimeString()}:{message.Replace('\n', ' ').Replace("\r", "")}");
+                        try
                         {
-                            message = message.Substring(start);
-                            var data = JsonConvert.DeserializeObject<RfidData>(message);
-                            if (data != null && !string.IsNullOrEmpty(data.RFIDStamp))
-                                SendRfidId(data.RFIDStamp);
+                            int start = message.IndexOf('{');
+                            if (start >= 0)
+                            {
+                                message = message.Substring(start);
+                                var data = JsonConvert.DeserializeObject<RfidData>(message);
+                                if (data != null && !string.IsNullOrEmpty(data.RFIDStamp))
+                                    SendRfidId(data.RFIDStamp);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex.Message);
                         }
                     }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(ex.Message);
-                    }
+                    state.sb = new StringBuilder(content);
+                    // Not all data received. Get more.  
+                    handler.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
+                    new AsyncCallback(ReadCallback), state);
                 }
-                state.sb = new StringBuilder(content);
-                // Not all data received. Get more.  
-                handler.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
-                new AsyncCallback(ReadCallback), state);
-            }
+            catch () { }
         }
 
         private static async void SendRfidId(string rfidId)
         {
             var serviceScopeFactory = Startup.GetRequiredService<IServiceScopeFactory>();
-            using(var scope = serviceScopeFactory.CreateScope()) {
+            using (var scope = serviceScopeFactory.CreateScope())
+            {
                 var hubContext = scope.ServiceProvider.GetRequiredService<IHubContext<RfidHub>>();
                 var sendRfid = hubContext.Clients.All.SendAsync("RfidFound", rfidId);
                 var numberService = scope.ServiceProvider.GetService<INumberService>();

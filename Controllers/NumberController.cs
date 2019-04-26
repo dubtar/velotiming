@@ -19,10 +19,9 @@ namespace VeloTiming.Controllers
         }
 
         [HttpGet]
-        public async Task<IEnumerable<NumberModel>> Get()
+        public IEnumerable<NumberModel> Get()
         {
-            var numbers = await numberService.GetAll();
-            return numbers.Select(n => new NumberModel(n));
+            return numberService.GetAll();
         }
 
         [HttpDelete("{id}")]
@@ -42,17 +41,14 @@ namespace VeloTiming.Controllers
                 return BadRequest(ex.Message);
             }
         }
-    }
 
-    public class NumberModel
-    {
-        public NumberModel() { }
-        public NumberModel(Number entity)
+        [HttpPost]
+        public async Task<IActionResult> AddOrUpdate([FromBody] NumberModel model)
         {
-            Id = entity.Id;
-            Rfids = entity.NumberRfids?.Split(' ') ?? new string[0];
+            if (model == null || string.IsNullOrEmpty(model.Id))
+                return BadRequest("Number not posted");
+            await numberService.AddOrUpdate(model);
+            return Ok(Get());
         }
-        public string Id { get; set; }
-        public string[] Rfids { get; set; }
     }
 }

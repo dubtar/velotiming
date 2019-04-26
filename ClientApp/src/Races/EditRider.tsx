@@ -1,5 +1,5 @@
 import React from 'react'
-import { Rider, Sex, RaceCategory } from './RaceService'
+import { RaceCategory, Rider, Sex } from './RaceService'
 import { string as yupString, number as yupNumber, ref as yupRef, object as yupObject } from 'yup'
 import { Formik } from 'formik';
 import { Form, Col, Button } from 'react-bootstrap'
@@ -111,13 +111,13 @@ export default class EditRider extends React.Component<Props, typeof InitialStat
                             <Form.Group as={Col} controlId="city">
                                 <Form.Label>Город</Form.Label>
                                 <Form.Control type="text" maxLength={50} name="city" onChange={handleChange}
-                                    isInvalid={touched.city && !!errors.city} value={values.city}></Form.Control>
+                                    isInvalid={touched.city && !!errors.city} value={values.city}/>
                                 <Feedback type="invalid">{errors.city}</Feedback>
                             </Form.Group>
                             <Form.Group as={Col} controlId="team">
                                 <Form.Label>Команда</Form.Label>
                                 <Form.Control type="text" maxLength={50} name="team" onChange={handleChange}
-                                    isInvalid={touched.team && !!errors.team} value={values.team}></Form.Control>
+                                    isInvalid={touched.team && !!errors.team} value={values.team}/>
                                 <Feedback type="invalid">{errors.team}</Feedback>
                             </Form.Group>
                         </Form.Row>
@@ -131,7 +131,7 @@ export default class EditRider extends React.Component<Props, typeof InitialStat
         )
     }
 
-    static onChangeAndSetDefaultCategory({ handleChange, values, categories, setFieldValue }:
+    private static onChangeAndSetDefaultCategory({ handleChange, values, categories, setFieldValue }:
         { handleChange: (e: React.ChangeEvent<EventTarget>) => void; values: Rider; categories: RaceCategory[]; setFieldValue: (field: string, value: any) => void; }) {
         return (e: React.ChangeEvent<EventTarget>) => {
             handleChange(e);

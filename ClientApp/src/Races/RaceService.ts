@@ -1,4 +1,4 @@
-import { number } from "yup";
+import { number } from 'yup';
 
 export interface Race {
     id: number;
@@ -53,23 +53,23 @@ const apiRiderUrl = apiUrl + 'rider/'
 const apiStartUrl = apiUrl + 'start/'
 
 export default class RaceService {
-    static GetRaces(): any {
+    public static GetRaces(): any {
         return fetch('/api/races').then(this.checkStatus)
     }
 
-    static GetRace(raceId: number): Promise<Race> {
+    public static GetRace(raceId: number): Promise<Race> {
         return fetch(apiUrl + raceId).then(this.checkStatus)
     }
 
-    static AddRace(race: Partial<Race>): Promise<void> {
+    public static AddRace(race: Partial<Race>): Promise<void> {
         return fetch(apiUrl, {
+            body: JSON.stringify(race),
             method: 'post',
             headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-            body: JSON.stringify(race)
         }).then(this.checkStatus)
     }
 
-    static UpdateRace(race: Partial<Race>): Promise<void> {
+    public static UpdateRace(race: Partial<Race>): Promise<void> {
         return fetch(apiUrl + race.id, {
             method: 'put',
             headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
@@ -77,17 +77,17 @@ export default class RaceService {
         }).then(this.checkStatus)
     }
 
-    static DeleteRace(id: number): Promise<{}> {
+    public static DeleteRace(id: number): Promise<{}> {
         return fetch(apiUrl + id, {
             method: 'delete'
         }).then(this.checkStatus);
     }
 
-    static GetRaceCategories(raceId: number): Promise<RaceCategory[]> {
+    public static GetRaceCategories(raceId: number): Promise<RaceCategory[]> {
         return fetch(apiCatUrl + raceId).then(this.checkStatus);
     }
 
-    static AddCategory(raceId: number, category: RaceCategory): Promise<void> {
+    public static AddCategory(raceId: number, category: RaceCategory): Promise<void> {
         return fetch(apiCatUrl + raceId, {
             method: 'post',
             headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
@@ -95,7 +95,7 @@ export default class RaceService {
         }).then(this.checkStatus)
     }
 
-    static UpdateCategory(category: RaceCategory): Promise<void> {
+    public static UpdateCategory(category: RaceCategory): Promise<void> {
         return fetch(apiCatUrl, {
             method: 'put',
             headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
@@ -103,17 +103,17 @@ export default class RaceService {
         }).then(this.checkStatus)
     }
 
-    static DeleteCategory(categoryId: number): Promise<RaceCategory[]> {
+    public static DeleteCategory(categoryId: number): Promise<RaceCategory[]> {
         return fetch(apiCatUrl + categoryId, {
             method: 'delete',
         }).then(this.checkStatus)
     }
 
-    static GetRiders(raceId: number): Promise<Rider[]> {
+    public static GetRiders(raceId: number): Promise<Rider[]> {
         return fetch(apiRiderUrl + raceId).then(this.checkStatus)
     }
 
-    static AddRider(raceId: number, rider: Rider): Promise<Rider[]> {
+    public static AddRider(raceId: number, rider: Rider): Promise<Rider[]> {
         return fetch(apiRiderUrl+raceId, {
             method: 'post',
             headers: { 'Content-Type': 'application/json'},
@@ -121,7 +121,7 @@ export default class RaceService {
         }).then(this.checkStatus)
     }
 
-    static UpdateRider(rider: Rider): Promise<Rider[]> {
+    public static UpdateRider(rider: Rider): Promise<Rider[]> {
         return fetch(apiRiderUrl, {
             method: 'put',
             headers: { 'Content-Type': 'application/json'},
@@ -129,17 +129,17 @@ export default class RaceService {
         }).then(this.checkStatus)
     }
 
-    static DeleteRider(riderId: number): Promise<Rider[]> {
+    public static DeleteRider(riderId: number): Promise<Rider[]> {
         return fetch(apiRiderUrl + riderId, {
             method: 'delete'
         }).then(this.checkStatus)
     }
 
-    static GetStarts(raceId: number): Promise<Start[]> {
+    public static GetStarts(raceId: number): Promise<Start[]> {
         return fetch(apiStartUrl + raceId).then(this.checkStatus)
     }
 
-    static AddStart(raceId: number, start: Start): Promise<Start[]> {
+    public static AddStart(raceId: number, start: Start): Promise<Start[]> {
         return fetch(apiStartUrl+raceId, {
             method: 'post',
             headers: { 'Content-Type': 'application/json'},
@@ -147,7 +147,7 @@ export default class RaceService {
         }).then(this.checkStatus)
     }
 
-    static UpdateStart(start: Start): Promise<Start[]> {
+    public static UpdateStart(start: Start): Promise<Start[]> {
         return fetch(apiStartUrl, {
             method: 'put',
             headers: { 'Content-Type': 'application/json'},
@@ -155,7 +155,7 @@ export default class RaceService {
         }).then(this.checkStatus)
     }
 
-    static DeleteStart(startId: number): Promise<Start[]> {
+    public static DeleteStart(startId: number): Promise<Start[]> {
         return fetch(apiStartUrl + startId, {
             method: 'delete'
         }).then(this.checkStatus)
@@ -163,6 +163,6 @@ export default class RaceService {
 
     private static async checkStatus(resp: Response) {
         if (resp.ok) return resp.json()
-        throw `${resp.statusText} ${await resp.text()}`
+        throw new Error(`${resp.statusText} ${await resp.text()}`)
     }
 }

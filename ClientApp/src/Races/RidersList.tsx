@@ -81,7 +81,7 @@ export default class RidersList extends React.Component<Props, typeof InitialSta
                             <EditRider rider={this.state.editRider} categories={this.state.categories} onSubmit={this.saveRider} />}
                         {this.state.editRider === null &&  <Button className="mv-3" onClick={this.addRider}>Добавить участника</Button>}
                         <Row><Col>
-                            <Table striped hover bordered>
+                            <Table striped={true} hover={true} bordered={true}>
                                 <thead><tr>
                                     <th/>
                                     <th>Номер</th>

@@ -12,11 +12,8 @@
         ]
     },
     "rules": {
-        "quotemark": [true, "single", "jsx-double"],
-        "semicolon": false,
         "interface-over-type-literal": false,
-        "interface-name": false,
-        "curly": [true, "ignore-same-line"],
-        "jsx-boolean-value": false
+        "ordered-imports": false,
+        "curly": [true, "ignore-same-line"]
     }
 }
