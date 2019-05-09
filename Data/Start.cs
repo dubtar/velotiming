@@ -15,6 +15,7 @@ namespace VeloTiming.Data
         [ForeignKey("RaceId")]
         public virtual Race Race { get; set; }
         public virtual ICollection<StartCategory> Categories { get; set; }
+        public bool IsActive { get; set; }
     }
 
     public class StartCategory 

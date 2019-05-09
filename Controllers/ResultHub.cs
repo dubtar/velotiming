@@ -5,13 +5,13 @@ using VeloTiming.Data;
 namespace VeloTiming.Hubs {
     public class ResultHub : Hub
     {
-        public readonly IRaceService raceService ;
-        public ResultHub(IRaceService raceService)
+        public readonly IMainService raceService ;
+        public ResultHub(IMainService raceService)
         {
             this.raceService = raceService;
         }
-        public async Task RaceStarted() {
-            var race = raceService.StartRace();
+        public async Task RaceStarted(int startId) {
+            var race = raceService.StartRace(startId);
             await Clients.All.SendAsync("RaceStarted", race);
         }
 

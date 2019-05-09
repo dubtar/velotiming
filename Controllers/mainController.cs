@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using VeloTiming.Data;
 
@@ -8,39 +9,43 @@ namespace VeloTiming.Controllers
     [Route("api")]
     public class MainController : Controller
     {
-        public static Race StartedRace; 
-        public static RaceStart CurrentStart;
-
-        private readonly IRaceService raceService;
+        private readonly IMainService mainService;
         private readonly DataContext dataContext;
 
-        public MainController(IRaceService raceService, DataContext dataContext)
+        public MainController(IMainService mainService, DataContext dataContext)
         {
-            this.raceService = raceService;
-            this.dataContext = dataContext;
+            this.mainService = mainService;
         }
 
-        [HttpPost("start")]
-        public async IActionResult Start(int raceId)
+        [HttpPost("setActive")]
+        public async Task<IActionResult> SetActiveStart(int startId)
         {
-            if (StartedRace != null && StartedRace.Id != )
-            var race = this.dataContext.Races.FindAsync(raceId);
-            if (race == null) return NotFound($"Race not found by id: {raceId}");
-
-            return Ok();
+            try
+            {
+                await mainService.SetActiveStart(startId);
+                return Ok();
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound($"Start not found by id: {startId}");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet("race")]
         public RaceInfo GetCurrentRace()
         {
-            return raceService.GetRaceInfo();
+            return mainService.GetRaceInfo();
         }
 
         [HttpGet("marks")]
         public IEnumerable<Mark> GetMarks()
         {
 
-            return raceService.GetMarks();
+            return mainService.GetMarks();
         }
     }
 }

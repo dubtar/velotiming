@@ -37,7 +37,7 @@ namespace VeloTiming
 
             services.AddSignalR();
 
-            services.AddTransient(typeof(IRaceService), typeof(RaceService));
+            services.AddSingleton(typeof(IMainService), typeof(MainService));
 
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
@@ -87,8 +87,7 @@ namespace VeloTiming
                 }
             });
 
-
-
+            MainService.Init(app.ApplicationServices);
             serviceProvider = app.ApplicationServices;
             // listen to websocket to /rfid
             // app.UseWebSockets().ListenRfidWebScoket();
