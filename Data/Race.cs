@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -20,6 +21,7 @@ namespace VeloTiming.Data
 
         public virtual ICollection<Start> Starts { get; set; }
 
+        public virtual ICollection<RaceNumber> RaceNumbers { get; set; }
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
@@ -30,5 +32,15 @@ namespace VeloTiming.Data
         [Description("Разделка")]
         TimeTrial = 2
         // Criterium
+    }
+
+    public class RaceNumber 
+    {
+        public int Id { get; set; }
+
+        [ForeignKey("Number")]
+        public string NumberId { get; set; }
+        public virtual Number Number { get; set; }
+        public bool IsReturned { get; set; }
     }
 }

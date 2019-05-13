@@ -9,8 +9,8 @@ using VeloTiming.Data;
 namespace veloTiming.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20190417170955_AddRiderNumber")]
-    partial class AddRiderNumber
+    [Migration("20190426112049_AddNumbersTable")]
+    partial class AddNumbersTable
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -48,6 +48,18 @@ namespace veloTiming.Migrations
                     b.HasIndex("RaceId");
 
                     b.ToTable("Entry");
+                });
+
+            modelBuilder.Entity("VeloTiming.Data.Number", b =>
+                {
+                    b.Property<string>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("NumberRfids");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Numbers");
                 });
 
             modelBuilder.Entity("VeloTiming.Data.Race", b =>
@@ -92,6 +104,26 @@ namespace veloTiming.Migrations
                     b.ToTable("RaceCategories");
                 });
 
+            modelBuilder.Entity("VeloTiming.Data.RaceNumber", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<bool>("IsReturned");
+
+                    b.Property<string>("NumberId");
+
+                    b.Property<int?>("RaceId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NumberId");
+
+                    b.HasIndex("RaceId");
+
+                    b.ToTable("RaceNumber");
+                });
+
             modelBuilder.Entity("VeloTiming.Data.Rider", b =>
                 {
                     b.Property<int>("Id")
@@ -105,7 +137,7 @@ namespace veloTiming.Migrations
 
                     b.Property<string>("LastName");
 
-                    b.Property<string>("Number");
+                    b.Property<string>("NumberId");
 
                     b.Property<int>("RaceId");
 
@@ -119,25 +151,11 @@ namespace veloTiming.Migrations
 
                     b.HasIndex("CategoryId");
 
+                    b.HasIndex("NumberId");
+
                     b.HasIndex("RaceId");
 
                     b.ToTable("Riders");
-                });
-
-            modelBuilder.Entity("VeloTiming.Data.RiderRfid", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("RfidId");
-
-                    b.Property<int>("RiderId");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RiderId");
-
-                    b.ToTable("RiderRfid");
                 });
 
             modelBuilder.Entity("VeloTiming.Data.Start", b =>
@@ -167,9 +185,9 @@ namespace veloTiming.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<int?>("CategoryId");
+                    b.Property<int>("CategoryId");
 
-                    b.Property<int?>("StartId");
+                    b.Property<int>("StartId");
 
                     b.HasKey("Id");
 
@@ -199,23 +217,30 @@ namespace veloTiming.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
+            modelBuilder.Entity("VeloTiming.Data.RaceNumber", b =>
+                {
+                    b.HasOne("VeloTiming.Data.Number", "Number")
+                        .WithMany()
+                        .HasForeignKey("NumberId");
+
+                    b.HasOne("VeloTiming.Data.Race")
+                        .WithMany("RaceNumbers")
+                        .HasForeignKey("RaceId");
+                });
+
             modelBuilder.Entity("VeloTiming.Data.Rider", b =>
                 {
                     b.HasOne("VeloTiming.Data.RaceCategory", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId");
 
+                    b.HasOne("VeloTiming.Data.Number", "Number")
+                        .WithMany()
+                        .HasForeignKey("NumberId");
+
                     b.HasOne("VeloTiming.Data.Race", "Race")
                         .WithMany("Riders")
                         .HasForeignKey("RaceId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("VeloTiming.Data.RiderRfid", b =>
-                {
-                    b.HasOne("VeloTiming.Data.Rider", "Rider")
-                        .WithMany("Rfids")
-                        .HasForeignKey("RiderId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
@@ -231,11 +256,13 @@ namespace veloTiming.Migrations
                 {
                     b.HasOne("VeloTiming.Data.RaceCategory", "Category")
                         .WithMany()
-                        .HasForeignKey("CategoryId");
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("VeloTiming.Data.Start", "Start")
                         .WithMany("Categories")
-                        .HasForeignKey("StartId");
+                        .HasForeignKey("StartId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 #pragma warning restore 612, 618
         }

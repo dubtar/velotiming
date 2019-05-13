@@ -10,5 +10,10 @@
             "node_modules/**/*.ts",
             "coverage/lcov-report/*.js"
         ]
+    },
+    "rules": {
+        "interface-over-type-literal": false,
+        "ordered-imports": false,
+        "curly": [true, "ignore-same-line"]
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using VeloTiming.Data;
+using VeloTiming.Services;
 
 namespace VeloTiming.Controllers
 {

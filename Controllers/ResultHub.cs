@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.SignalR;
 using System.Threading.Tasks;
 using VeloTiming.Data;
+using VeloTiming.Services;
 
 namespace VeloTiming.Hubs {
     public class ResultHub : Hub

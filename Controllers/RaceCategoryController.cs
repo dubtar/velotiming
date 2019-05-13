@@ -53,8 +53,11 @@ namespace VeloTiming.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var entity = await dataContext.RaceCategories.FindAsync(id);
+            var entity = await dataContext.RaceCategories.FirstOrDefaultAsync(rc => rc.Id == id);
             if (entity == null) return NotFound();
+            // do not allow if any rider has that category
+            if (dataContext.Riders.Any(r => r.Category.Id == id))
+                return BadRequest("Есть гонщики с данной категорией");
             int raceId = entity.RaceId;
             dataContext.RaceCategories.Remove(entity);
             await dataContext.SaveChangesAsync();
@@ -85,7 +88,7 @@ namespace VeloTiming.Controllers
         }
 
         public int Id { get; set; }
-        public string Name { get;  set; }
+        public string Name { get; set; }
         public string Code { get; set; }
 
         public Sex Sex { get; set; }

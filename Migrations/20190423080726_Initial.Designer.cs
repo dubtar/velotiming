@@ -9,14 +9,14 @@ using VeloTiming.Data;
 namespace veloTiming.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20190411202748_AddStarts")]
-    partial class AddStarts
+    [Migration("20190423080726_Initial")]
+    partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.3-servicing-35854");
+                .HasAnnotation("ProductVersion", "2.2.4-servicing-10062");
 
             modelBuilder.Entity("VeloTiming.Data.Entry", b =>
                 {
@@ -105,6 +105,8 @@ namespace veloTiming.Migrations
 
                     b.Property<string>("LastName");
 
+                    b.Property<string>("Number");
+
                     b.Property<int>("RaceId");
 
                     b.Property<int>("Sex");
@@ -120,6 +122,22 @@ namespace veloTiming.Migrations
                     b.HasIndex("RaceId");
 
                     b.ToTable("Riders");
+                });
+
+            modelBuilder.Entity("VeloTiming.Data.RiderRfid", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("RfidId");
+
+                    b.Property<int>("RiderId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RiderId");
+
+                    b.ToTable("RiderRfid");
                 });
 
             modelBuilder.Entity("VeloTiming.Data.Start", b =>
@@ -142,6 +160,24 @@ namespace veloTiming.Migrations
                     b.HasIndex("RaceId");
 
                     b.ToTable("Starts");
+                });
+
+            modelBuilder.Entity("VeloTiming.Data.StartCategory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<int>("CategoryId");
+
+                    b.Property<int>("StartId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("StartId");
+
+                    b.ToTable("StartCategory");
                 });
 
             modelBuilder.Entity("VeloTiming.Data.Entry", b =>
@@ -175,11 +211,32 @@ namespace veloTiming.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
+            modelBuilder.Entity("VeloTiming.Data.RiderRfid", b =>
+                {
+                    b.HasOne("VeloTiming.Data.Rider", "Rider")
+                        .WithMany("Rfids")
+                        .HasForeignKey("RiderId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("VeloTiming.Data.Start", b =>
                 {
                     b.HasOne("VeloTiming.Data.Race", "Race")
                         .WithMany("Starts")
                         .HasForeignKey("RaceId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("VeloTiming.Data.StartCategory", b =>
+                {
+                    b.HasOne("VeloTiming.Data.RaceCategory", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("VeloTiming.Data.Start", "Start")
+                        .WithMany("Categories")
+                        .HasForeignKey("StartId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 #pragma warning restore 612, 618
