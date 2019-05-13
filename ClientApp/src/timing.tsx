@@ -23,7 +23,7 @@ export default class Timing extends Component<Props, typeof InitialState> {
     }
 
     componentDidMount() {
-        Svc.init();
+        Svc.Connect();
         Svc.GetRaceInfo().then(race => {
             this.setState({ race: race })
 

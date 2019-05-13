@@ -71,7 +71,7 @@ namespace VeloTiming
                 var start = dataContext.Starts.Include(s => s.Race).FirstOrDefault(s => s.Id == startId);
                 start.IsActive = true;
 
-                Race = new RaceInfo(start)
+                Race = new RaceInfo(start);
                 await dataContext.SaveChangesAsync();
             }
         }
