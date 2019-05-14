@@ -29,21 +29,21 @@ const EditCategory: React.SFC<Props> = (props: Props) => {
                 <Form noValidate onSubmit={handleSubmit} onReset={handleReset} className="bg-light p-3">
                     <h3>{values.id ? 'Правка категории' : 'Новая категория'}</h3>
                     <Form.Row>
-                        <Form.Group as={Col} controlId="code" >
+                        <Form.Group as={Col} controlId="code" className="col-2">
                             <Form.Label>Код</Form.Label>
                             <Form.Control type="text" value={values.code} name="code" maxLength={3}
                                 onChange={handleChange} isInvalid={touched.code && !!errors.code} autoFocus />
                             <Feedback type="invalid">{errors.code}</Feedback>
                         </Form.Group>
-                        <Form.Group as={Col} controlId="name" className="col-6">
+                        <Form.Group as={Col} controlId="name" className="col-4">
                             <Form.Label>Название</Form.Label>
                             <Form.Control type="text" value={values.name} name="name" maxLength={50}
                                 onChange={handleChange} isInvalid={touched.name && !!errors.name} />
                             <Feedback type="invalid">{errors.name}</Feedback>
                         </Form.Group>
-                        <Form.Group as={Col} controlId="sex">
+                        <Form.Group as={Col} controlId="sex" className="mh-3 col-2">
                             <Form.Label>Пол</Form.Label>
-                            <Form.Row>
+                            <Form.Row className="pt-2 pl-6">
                                 <Form.Check type="radio" inline
                                     checked={values.sex === Sex.Male}
                                     value={Sex.Male}
@@ -63,14 +63,14 @@ const EditCategory: React.SFC<Props> = (props: Props) => {
                             </Form.Row>
                             <Feedback type="invalid">{errors.sex}</Feedback>
                         </Form.Group>
-                        <Form.Group>
+                        <Form.Group as={Col} className="col-2">
                             <Form.Label>Г.р. мин</Form.Label>
                             <Form.Control type="number" value={values.minYearOfBirth && values.minYearOfBirth.toString() || ''}
                                 name="minYearOfBirth" min={1900} max={new Date().getFullYear()}
                                 onChange={handleChange} isInvalid={touched.minYearOfBirth && !!errors.minYearOfBirth} />
                             <Feedback type="invalid">{errors.minYearOfBirth}</Feedback>
                         </Form.Group>
-                        <Form.Group>
+                        <Form.Group as={Col} className="col-2">
                             <Form.Label>Г.р. макс</Form.Label>
                             <Form.Control type="number" value={values.maxYearOfBirth && values.maxYearOfBirth.toString() || ''}
                                 name="maxYearOfBirth" min={1900} max={new Date().getFullYear()}

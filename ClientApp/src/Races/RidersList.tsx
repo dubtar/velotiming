@@ -4,7 +4,6 @@ import EditRider from './EditRider';
 import RaceService, { RaceCategory, Rider, Sex } from './RaceService';
 
 const InitialState = {
-    categories: null as RaceCategory[] | null,
     editRider: null as Rider | null,
     error: null as string | null,
     riders: null as Rider[] | null
@@ -22,9 +21,6 @@ export default class RidersList extends React.Component<Props, typeof InitialSta
     }
 
     public async componentDidMount() {
-        RaceService.GetRaceCategories(this.props.raceId).then(categories => {
-            this.setState({ categories })
-        }, error => { this.setState({ error }) });
         try {
             const riders = await RaceService.GetRiders(this.props.raceId)
             this.setState({ riders })
@@ -77,8 +73,8 @@ export default class RidersList extends React.Component<Props, typeof InitialSta
                 {!this.state.riders && <Spinner animation="grow" />}
                 {this.state.riders && (
                     <>
-                        {this.state.editRider !== null && this.state.categories &&
-                            <EditRider rider={this.state.editRider} categories={this.state.categories} onSubmit={this.saveRider} />}
+                        {this.state.editRider !== null && 
+                            <EditRider rider={this.state.editRider} raceId={this.props.raceId} onSubmit={this.saveRider} />}
                         {this.state.editRider === null &&  <Button className="mv-3" onClick={this.addRider}>Добавить участника</Button>}
                         <Row><Col>
                             <Table striped={true} hover={true} bordered={true}>

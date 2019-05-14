@@ -13,7 +13,10 @@
     },
     "rules": {
         "interface-over-type-literal": false,
+        "interface-name": false,
         "ordered-imports": false,
+        "object-literal-sort-keys": false,
+        "jsx-boolean-value": false,
         "curly": [true, "ignore-same-line"]
     }
 }
