@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using VeloTiming.Data;
@@ -16,15 +17,29 @@ namespace VeloTiming.Controllers
         public MainController(IMainService mainService, DataContext dataContext)
         {
             this.mainService = mainService;
+            this.dataContext = dataContext;
         }
 
-        [HttpPost("setActive")]
+        [HttpPost("setActive/{startId}")]
         public async Task<IActionResult> SetActiveStart(int startId)
         {
+            var currentRace = mainService.GetRaceInfo();
+            if (currentRace != null && currentRace.StartId == startId) return Ok(startId);
+
+            // clear old start
+            foreach (var activeStart in dataContext.Starts.Where(s => s.IsActive))
+            {
+                activeStart.IsActive = false;
+                activeStart.End = DateTime.Now;
+            }
+
             try
             {
-                await mainService.SetActiveStart(startId);
-                return Ok();
+                var start = await dataContext.Starts.FindAsync(startId);
+                start.IsActive = true;
+
+                mainService.SetActiveStart(start);
+                return Ok(startId);
             }
             catch (KeyNotFoundException)
             {

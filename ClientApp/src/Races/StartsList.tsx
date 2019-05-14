@@ -1,5 +1,5 @@
 import React from "react";
-import RaceService, { Start, Sex, RaceCategory } from "./RaceService";
+import RaceService, { Start, RaceCategory } from "./RaceService";
 import { Table, Row, Col, Alert, Spinner, Button, ButtonGroup } from "react-bootstrap";
 import EditStart from "./EditStart";
 import { Redirect } from "react-router";
@@ -24,10 +24,7 @@ export default class StartsList extends React.Component<Props, typeof InitialSta
         this.saveStart = this.saveStart.bind(this)
     }
 
-    async componentDidMount() {
-        RaceService.GetRaceCategories(this.props.raceId).then(categories => {
-            this.setState({ categories })
-        }, error => { this.setState({ error }) });
+    public async componentDidMount() {
         try {
             const starts = await RaceService.GetStarts(this.props.raceId)
             this.setState({ starts })
@@ -36,47 +33,7 @@ export default class StartsList extends React.Component<Props, typeof InitialSta
         }
     }
 
-    addStart() {
-        this.setState({ editStart: { id: 0, name: '', plannedStart: null, realStart: null, end: null, categories: [] } })
-    }
-
-    editStart(editStart: Start) {
-        this.setState({ editStart })
-    }
-
-    async deleteStart(startId: number) {
-        if (confirm('Удалить участника?'))
-            try {
-                const starts = await RaceService.DeleteStart(startId);
-                this.setState({ starts })
-
-            } catch (ex) {
-                this.setState({ error: ex.toString() })
-            }
-    }
-
-    async start(start: Start) {
-        await Svc.Start(start.id);
-        this.setState({ startRaceId : start.id });
-    }
-
-    async saveStart(start?: Start) {
-        try {
-            if (start) {
-                const starts = start.id ?  // edit exiting
-                    await RaceService.UpdateStart(start) :
-                    // add new
-                    await RaceService.AddStart(this.props.raceId, start)
-                this.setState({ starts })
-            }
-        } catch (ex) {
-            this.setState({ error: ex.toString() })
-        }
-        // close editor
-        this.setState({ editStart: null })
-    }
-
-    render() {
+    public render() {
         if (this.state.startRaceId) return <Redirect to="/run" />
         return (
             <Row><Col>
@@ -89,17 +46,17 @@ export default class StartsList extends React.Component<Props, typeof InitialSta
                                 <th>Название</th>
                                 <th>Старт</th>
                                 <th>Категории</th>
-                                <th></th>
+                                <th />
                             </tr></thead>
                             <tbody>
                                 {this.state.starts.map(start => (
                                     <tr key={start.id}>
                                         <td>{start.name}</td>
                                         <td>{start.plannedStart && new Date(start.plannedStart).toLocaleTimeString('ru')}</td>
-                                        <td>{start.categories && start.categories.map(c => c.name + ' ')}</td>
+                                        <td>{start.categories && start.categories.map(c => c.name).join(', ')}</td>
                                         <td>
                                             <ButtonGroup>
-                                                <Button variant="success" onClick={this.start.bind(this, start)}>Начать</Button>
+                                                <Button variant="success" onClick={this.start.bind(this, start.id)}>Начать</Button>
                                                 <Button variant="outline-primary" onClick={this.editStart.bind(this, start)}>Изменить</Button>
                                                 <Button variant="outline-danger" onClick={this.deleteStart.bind(this, start.id)}>Удалить</Button>
                                             </ButtonGroup>
@@ -115,6 +72,61 @@ export default class StartsList extends React.Component<Props, typeof InitialSta
                 )}
             </Col></Row>
         )
+    }
+
+    private addStart() {
+        RaceService.GetRaceCategories(this.props.raceId).then(categories => {
+            this.setState({
+                categories,
+                editStart: { id: 0, name: '', plannedStart: null, realStart: null, end: null, categories: [] }
+            })
+        }, error => { this.setState({ error }) });
+    }
+
+    private editStart(editStart: Start) {
+        RaceService.GetRaceCategories(this.props.raceId).then(categories => {
+            this.setState({
+                categories, editStart
+            })
+        }, error => { this.setState({ error }) });
+    }
+
+    private async deleteStart(startId: number) {
+        if (confirm('Удалить участника?')) {
+            try {
+                const starts = await RaceService.DeleteStart(startId);
+                this.setState({ starts })
+
+            } catch (ex) {
+                this.setState({ error: ex.toString() })
+            }
+        }
+    }
+
+    private async start(startId: number) {
+        try {
+            await Svc.SetActiveStart(startId)
+            this.setState({ startRaceId: startId });
+        }
+        catch (ex) {
+            this.setState({ error: ex.toString() })
+        }
+    }
+
+    private async saveStart(start?: Start) {
+        try {
+            if (start) {
+                const starts = start.id ?  // edit exiting
+                    await RaceService.UpdateStart(start) :
+                    // add new
+                    await RaceService.AddStart(this.props.raceId, start)
+                this.setState({ starts })
+            }
+        } catch (ex) {
+            this.setState({ error: ex.toString() })
+        }
+        // close editor
+        this.setState({ editStart: null })
     }
 
 }

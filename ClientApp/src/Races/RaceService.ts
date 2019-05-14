@@ -114,9 +114,9 @@ export default class RaceService {
     }
 
     public static AddRider(raceId: number, rider: Rider): Promise<Rider[]> {
-        return fetch(apiRiderUrl+raceId, {
+        return fetch(apiRiderUrl + raceId, {
             method: 'post',
-            headers: { 'Content-Type': 'application/json'},
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(rider)
         }).then(this.checkStatus)
     }
@@ -124,7 +124,7 @@ export default class RaceService {
     public static UpdateRider(rider: Rider): Promise<Rider[]> {
         return fetch(apiRiderUrl, {
             method: 'put',
-            headers: { 'Content-Type': 'application/json'},
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(rider)
         }).then(this.checkStatus)
     }
@@ -140,9 +140,9 @@ export default class RaceService {
     }
 
     public static AddStart(raceId: number, start: Start): Promise<Start[]> {
-        return fetch(apiStartUrl+raceId, {
+        return fetch(apiStartUrl + raceId, {
             method: 'post',
-            headers: { 'Content-Type': 'application/json'},
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(start)
         }).then(this.checkStatus)
     }
@@ -150,7 +150,7 @@ export default class RaceService {
     public static UpdateStart(start: Start): Promise<Start[]> {
         return fetch(apiStartUrl, {
             method: 'put',
-            headers: { 'Content-Type': 'application/json'},
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(start)
         }).then(this.checkStatus)
     }

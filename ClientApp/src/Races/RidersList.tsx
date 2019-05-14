@@ -88,7 +88,6 @@ export default class RidersList extends React.Component<Props, typeof InitialSta
                                     <th>Кат.</th>
                                     <th>Город</th>
                                     <th>Команда</th>
-                                    <th>Rfid</th>
                                     <th/>
                                 </tr></thead>
                                 <tbody>

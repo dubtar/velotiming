@@ -16,17 +16,15 @@ namespace VeloTiming
         IEnumerable<Mark> GetMarks();
         Mark AddMark(Mark mark);
         Mark UpdateMark(Mark mark);
-        Task SetActiveStart(int startId);
+        void SetActiveStart(Start start);
     }
 
     public class MainService : IMainService
     {
         private static RaceInfo Race;
         private static List<Mark> Marks;
-        private readonly DataContext dataContext;
-        public MainService(DataContext dataContext)
+        public MainService()
         {
-            this.dataContext = dataContext;
         }
         public RaceInfo GetRaceInfo()
         {
@@ -56,24 +54,10 @@ namespace VeloTiming
             }
         }
 
-        public async Task SetActiveStart(int startId)
+        public void SetActiveStart(Start start)
         {
-            if (Race == null || Race.StartId != startId)
-            {
-                if (Race != null)
-                {
-                    // clear old start
-                    var activeStart = dataContext.Starts.Include(s => s.Race).FirstOrDefault(s => s.IsActive);
-                    activeStart.IsActive = false;
-                    activeStart.End = DateTime.Now;
-                }
-
-                var start = dataContext.Starts.Include(s => s.Race).FirstOrDefault(s => s.Id == startId);
-                start.IsActive = true;
-
-                Race = new RaceInfo(start);
-                await dataContext.SaveChangesAsync();
-            }
+            Race = new RaceInfo(start);
+            // notify new Start is Active
         }
 
         public IEnumerable<Mark> GetMarks()
