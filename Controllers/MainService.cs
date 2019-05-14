@@ -62,7 +62,9 @@ namespace VeloTiming
 
         public IEnumerable<Mark> GetMarks()
         {
-            return Marks.AsReadOnly();
+            IEnumerable<Mark> result =  Marks?.AsReadOnly();
+            if (result == null) result = new Mark[0];
+            return result;
         }
 
         public Mark AddMark(Mark mark)

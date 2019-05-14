@@ -8,12 +8,32 @@ import "moment/locale/ru";
 import Races from "./Races/Races";
 import { createBrowserHistory } from "history";
 import Numbers from "./Numbers/Numbers";
+import Svc, { RaceInfo } from './svc'
 
 moment.locale("ru");
 
 const history = createBrowserHistory();
 
-class App extends Component {
+const InitialState = {
+  race: null as RaceInfo | null
+}
+
+class App extends Component<{}, typeof InitialState> {
+
+  constructor(props: {}) {
+    super(props)
+    this.state = InitialState
+  }
+
+  public componentDidMount() {
+    Svc.Connect()
+    Svc.Race.subscribe(race => this.setState({ race }))
+  }
+
+  public componentWillUnmount() {
+    Svc.Race.unsubscribe()
+  }
+
   public render() {
     return (
       <div className="h-100 d-flex flex-column">
@@ -29,6 +49,12 @@ class App extends Component {
                   Номера
                 </Link>
               </Nav>
+              {this.state.race && 
+              <Nav>
+                <Link to="/run" className="nav-link-primary">
+                  {this.state.race.name}
+                </Link>
+              </Nav>}
             </Container>
           </Navbar>
           <Route path="/run" component={Timing} />

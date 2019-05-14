@@ -5,7 +5,7 @@ import Svc, { Mark, RaceInfo } from './svc';
 import MarkView from "./markView";
 
 const InitialState = {
-    race: undefined as RaceInfo | undefined,
+    race: null as RaceInfo | null,
     marks: undefined as Mark[] | undefined,
     number: ''
 
@@ -22,52 +22,24 @@ export default class Timing extends Component<Props, typeof InitialState> {
         this.onKeyDown = this.onKeyDown.bind(this);
     }
 
-    componentDidMount() {
-        Svc.Connect();
-        Svc.GetRaceInfo().then(race => {
-            this.setState({ race: race })
-
-            // attach to keyboard press
-            document.addEventListener('keydown', this.onKeyDown);
-        });
+    public componentDidMount() {
+        // attach to keyboard press
+        document.addEventListener('keydown', this.onKeyDown);
         Svc.Marks.subscribe(marks => this.setState({ marks }));
         Svc.Race.subscribe(race => this.setState({ race }));
     }
-    componentWillUnmount() {
+
+    public componentWillUnmount() {
         document.removeEventListener('keydown', this.onKeyDown)
         Svc.Marks.unsubscribe();
         Svc.Race.unsubscribe();
     }
 
-    onKeyDown(e: KeyboardEvent) {
-        if (!this.state.race) return;
-        if (e.repeat) return; // не отвечать на зажатую клавишу. Может предупреждать о кошке, сидящей на кнопке
-        if (e.key === ' ' || e.key === 'Spacebar') {
-            Svc.AddTime('UI');
-        } else if (e.key in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) { // >= '0' && e.key <= '9') {
-            this.setState({ number: this.state.number + e.key });
-        } else if (e.key === 'Backspace' || e.key === 'Delete') {
-            let num = this.state.number;
-            if (num.length)
-                this.setState({ number: num.substring(0, num.length - 1) });
-
-            // Чтобы не переходило на предыдущую страницу браузера.
-            // Возможно, надо будет отключать для элементов input
-            e.preventDefault();
-        } else if (e.key === 'Enter') {
-            let number = this.state.number;
-            if (number) {
-                Svc.AddNumber(number, 'UI');
-                this.setState({ number: '' })
-            }
-        }
-    }
-
-    start() {
+    public start() {
         Svc.StartRace();
     }
 
-    render() {
+    public render() {
         if (!this.state.race) return <Container>Соединение...</Container>
         return (
             <Container className="flex-fill">
@@ -95,5 +67,30 @@ export default class Timing extends Component<Props, typeof InitialState> {
                 </div>
             </Container>
         );
+    }
+
+    private onKeyDown(e: KeyboardEvent) {
+        if (!this.state.race) return;
+        if (e.repeat) return; // не отвечать на зажатую клавишу. Может предупреждать о кошке, сидящей на кнопке
+        if (e.key === ' ' || e.key === 'Spacebar') {
+            Svc.AddTime('UI');
+        } else if (e.key in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) { // >= '0' && e.key <= '9') {
+            this.setState({ number: this.state.number + e.key });
+        } else if (e.key === 'Backspace' || e.key === 'Delete') {
+            const num = this.state.number;
+            if (num.length) {
+                this.setState({ number: num.substring(0, num.length - 1) });
+            }
+
+            // Чтобы не переходило на предыдущую страницу браузера.
+            // Возможно, надо будет отключать для элементов input
+            e.preventDefault();
+        } else if (e.key === 'Enter') {
+            const num = this.state.number;
+            if (num) {
+                Svc.AddNumber(num, 'UI');
+                this.setState({ number: '' })
+            }
+        }
     }
 }

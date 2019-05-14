@@ -18,7 +18,7 @@ export interface Mark {
 
 export default class Service {
     public static readonly Marks = new Subject<Mark[]>();
-    public static readonly Race = new Subject<RaceInfo>();
+    public static readonly Race = new Subject<RaceInfo | null>();
 
     public static Connect() {
         if (Service.inited) return;
@@ -32,10 +32,9 @@ export default class Service {
             Service.marks.push(mark);
             Service.onMarksChange();
         });
-        Service.sRconnection.on('RaceStarted', (race: RaceInfo) => {
-            Service.race = race;
-            Service.Race.next(race);
-        });
+        Service.sRconnection.on('StartActive', Service.setCurrentRaceInfo)
+        Service.sRconnection.on('RaceStarted', Service.setCurrentRaceInfo)
+
         Service.sRconnection.on('ResultUpdated', (mark: Mark) => {
             const ind = Service.marks.findIndex(m => m.id === mark.id);
             if (ind >= 0) {
@@ -45,6 +44,8 @@ export default class Service {
         });
         // tslint:disable-next-line:no-console
         Service.sRconnection.start().catch(err => console.error(err))
+
+        this.GetRaceInfo().then(Service.setCurrentRaceInfo)
     }
 
     public static Disconnect() {
@@ -140,9 +141,14 @@ export default class Service {
 
     private static sRconnection: signalR.HubConnection | undefined;
     private static marks: Mark[] = [];
-    private static race?: RaceInfo;
+    private static race: RaceInfo | null = null;
 
     private static inited = false;
+
+    private static setCurrentRaceInfo(race: RaceInfo | null) {
+            Service.race = race;
+            Service.Race.next(race);
+    }
 
     private static addMark(mark: Partial<Mark>) {
         const m = { ...mark, id: Service.uuidv4(), time: mark.time || null };
