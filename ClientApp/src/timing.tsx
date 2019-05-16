@@ -3,6 +3,7 @@ import { Button, Container } from "react-bootstrap";
 import Timer from "./timer";
 import Svc, { Mark, RaceInfo } from './svc';
 import MarkView from "./markView";
+import { Subscription } from "rxjs";
 
 const InitialState = {
     race: null as RaceInfo | null,
@@ -14,6 +15,8 @@ const InitialState = {
 type Props = {}
 
 export default class Timing extends Component<Props, typeof InitialState> {
+    public marksSubscription?: Subscription;
+    public raceSubscription?: Subscription;
 
     constructor(props: Props) {
         super(props);
@@ -25,14 +28,14 @@ export default class Timing extends Component<Props, typeof InitialState> {
     public componentDidMount() {
         // attach to keyboard press
         document.addEventListener('keydown', this.onKeyDown);
-        Svc.Marks.subscribe(marks => this.setState({ marks }));
-        Svc.Race.subscribe(race => this.setState({ race }));
+        this.marksSubscription = Svc.Marks.subscribe(marks => this.setState({ marks }));
+        this.raceSubscription = Svc.Race.subscribe(race => this.setState({ race }));
     }
 
     public componentWillUnmount() {
         document.removeEventListener('keydown', this.onKeyDown)
-        Svc.Marks.unsubscribe();
-        Svc.Race.unsubscribe();
+        if (this.marksSubscription) this.marksSubscription.unsubscribe();
+        if (this.raceSubscription) this.raceSubscription.unsubscribe();
     }
 
     public start() {
@@ -40,12 +43,13 @@ export default class Timing extends Component<Props, typeof InitialState> {
     }
 
     public render() {
-        if (!this.state.race) return <Container>Соединение...</Container>
+        if (!this.state.race) return (<Container>Нет текущего старта.</Container>)
+        
         return (
             <Container className="flex-fill">
                 <div className="d-flex h-100 flex-column">
                     <div className="d-flex justify-content-between">
-                        <h1>{this.state.race.name}</h1>
+                        <h1>{`${this.state.race.raceName}  ${this.state.race.startName}`}</h1>
                         {this.state.race.start && <h1><Timer start={this.state.race.start} /></h1>}
                     </div>
                     <div className="flex-fill">

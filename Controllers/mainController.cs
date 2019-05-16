@@ -26,19 +26,15 @@ namespace VeloTiming.Controllers
             var currentRace = mainService.GetRaceInfo();
             if (currentRace != null && currentRace.StartId == startId) return Ok(startId);
 
-            // clear old start
-            foreach (var activeStart in dataContext.Starts.Where(s => s.IsActive))
-            {
-                activeStart.IsActive = false;
-                activeStart.End = DateTime.Now;
-            }
 
             try
             {
+                DeactivateAllActiveStarts();
                 var start = await dataContext.Starts.FindAsync(startId);
                 start.IsActive = true;
 
-                mainService.SetActiveStart(start);
+                await dataContext.SaveChangesAsync();
+                await mainService.SetActiveStart(start);
                 return Ok(startId);
             }
             catch (KeyNotFoundException)
@@ -48,6 +44,27 @@ namespace VeloTiming.Controllers
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpDelete("deactivate")]
+        public async Task Deactivate()
+        {
+            var currentRace = mainService.GetRaceInfo();
+            if (currentRace != null)
+            {
+                DeactivateAllActiveStarts();
+                await dataContext.SaveChangesAsync();
+                await mainService.SetActiveStart(null);
+            }
+        }
+
+        private void DeactivateAllActiveStarts()
+        {
+            foreach (var activeStart in dataContext.Starts.Where(s => s.IsActive))
+            {
+                activeStart.IsActive = false;
+                activeStart.End = DateTime.Now;
             }
         }
 

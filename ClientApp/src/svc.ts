@@ -1,10 +1,11 @@
-import { Subject } from 'rxjs';
+import { Subject, BehaviorSubject } from 'rxjs';
 import moment from 'moment';
 import * as signalR from "@aspnet/signalr";
 
 export interface RaceInfo {
-    name: string;
-    date: Date;
+    raceName: string;
+    startName: string;
+    startId: number;
     start: Date | null;
 }
 
@@ -18,7 +19,7 @@ export interface Mark {
 
 export default class Service {
     public static readonly Marks = new Subject<Mark[]>();
-    public static readonly Race = new Subject<RaceInfo | null>();
+    public static readonly Race = new BehaviorSubject<RaceInfo | null>(null);
 
     public static Connect() {
         if (Service.inited) return;
@@ -32,7 +33,7 @@ export default class Service {
             Service.marks.push(mark);
             Service.onMarksChange();
         });
-        Service.sRconnection.on('StartActive', Service.setCurrentRaceInfo)
+        Service.sRconnection.on('ActiveStart', Service.setCurrentRaceInfo)
         Service.sRconnection.on('RaceStarted', Service.setCurrentRaceInfo)
 
         Service.sRconnection.on('ResultUpdated', (mark: Mark) => {
@@ -58,15 +59,20 @@ export default class Service {
         }
     }
 
-    public static SetActiveStart(startId: number) {
+    public static SetActiveStart(startId: number) : Promise<number> {
         return fetch('/api/setActive/' + startId,
-            { method: 'post'}).then(this.checkStatus);
+            { method: 'post' }).then(this.checkStatus);
     }
 
-    public static async GetRaceInfo(): Promise<RaceInfo> {
+    public static DeactivateStart(): Promise<void> {
+        return fetch('/api/deactivate/', { method: 'delete' }).then(this.checkStatus)
+    }
+
+    public static async GetRaceInfo(): Promise<RaceInfo | null> {
         if (Service.race) return Promise.resolve(Service.race);
         const r = await fetch('/api/race');
-        return Service.race = await r.json();
+        if (r.status === 204) return null;
+        else return Service.race = await r.json();
     }
 
     public static StartRace(): void {
@@ -130,7 +136,7 @@ export default class Service {
     }
 
     public static uuidv4() {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,  (c) => {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
             // tslint:disable-next-line:no-bitwise
             const r = Math.random() * 16 | 0;
             // tslint:disable-next-line:no-bitwise
@@ -146,8 +152,8 @@ export default class Service {
     private static inited = false;
 
     private static setCurrentRaceInfo(race: RaceInfo | null) {
-            Service.race = race;
-            Service.Race.next(race);
+        Service.race = race;
+        Service.Race.next(race);
     }
 
     private static addMark(mark: Partial<Mark>) {
@@ -164,7 +170,7 @@ export default class Service {
     }
 
     private static async checkStatus(resp: Response) {
-        if (resp.ok) return resp.json()
+        if (resp.ok) return resp.headers.get('Content-Length') === '0' ?  resp.text() : resp.json()
         throw new Error(`${resp.statusText} ${await resp.text()}`)
     }
 }

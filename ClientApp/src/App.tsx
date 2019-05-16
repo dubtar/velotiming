@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Route, Router, Redirect, Link } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.css";
-import { Navbar, Container, Nav } from "react-bootstrap";
+import { Navbar, Container, Nav, Button } from "react-bootstrap";
 import Timing from "./timing";
 import moment from "moment";
 import "moment/locale/ru";
@@ -9,6 +9,7 @@ import Races from "./Races/Races";
 import { createBrowserHistory } from "history";
 import Numbers from "./Numbers/Numbers";
 import Svc, { RaceInfo } from './svc'
+import { Subscription } from "rxjs";
 
 moment.locale("ru");
 
@@ -19,6 +20,7 @@ const InitialState = {
 }
 
 class App extends Component<{}, typeof InitialState> {
+  private raceSubscription?: Subscription;
 
   constructor(props: {}) {
     super(props)
@@ -27,11 +29,11 @@ class App extends Component<{}, typeof InitialState> {
 
   public componentDidMount() {
     Svc.Connect()
-    Svc.Race.subscribe(race => this.setState({ race }))
+    this.raceSubscription = Svc.Race.subscribe(race => this.setState({ race }))
   }
 
   public componentWillUnmount() {
-    Svc.Race.unsubscribe()
+    if (this.raceSubscription) this.raceSubscription.unsubscribe()
   }
 
   public render() {
@@ -49,12 +51,13 @@ class App extends Component<{}, typeof InitialState> {
                   Номера
                 </Link>
               </Nav>
-              {this.state.race && 
-              <Nav>
-                <Link to="/run" className="nav-link-primary">
-                  {this.state.race.name}
-                </Link>
-              </Nav>}
+              {this.state.race &&
+                <Nav>
+                  <Link to="/run" className="btn btn-success">
+                    {`${this.state.race.raceName}  ${this.state.race.startName}`}
+                  </Link>
+                  <Button variant="secondary" onClick={this.deactivate}>Остановить</Button>
+                </Nav>}
             </Container>
           </Navbar>
           <Route path="/run" component={Timing} />
@@ -64,6 +67,9 @@ class App extends Component<{}, typeof InitialState> {
         </Router>
       </div>
     );
+  }
+  private deactivate() {
+    if (confirm('Остановить текущий заезд?')) Svc.DeactivateStart();
   }
 }
 const redirectToRaces = () => <Redirect to="/races" />;

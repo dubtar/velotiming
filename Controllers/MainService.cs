@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using VeloTiming.Data;
+using VeloTiming.Hubs;
 
 namespace VeloTiming
 {
@@ -16,7 +18,7 @@ namespace VeloTiming
         IEnumerable<Mark> GetMarks();
         Mark AddMark(Mark mark);
         Mark UpdateMark(Mark mark);
-        void SetActiveStart(Start start);
+        Task SetActiveStart(Start start);
     }
 
     public class MainService : IMainService
@@ -54,10 +56,10 @@ namespace VeloTiming
             }
         }
 
-        public void SetActiveStart(Start start)
+        public async Task SetActiveStart(Start start)
         {
-            Race = new RaceInfo(start);
-            // notify new Start is Active
+            Race = start == null ? null : new RaceInfo(start);
+            await GetHub().Clients.All.ActiveStart(Race);
         }
 
         public IEnumerable<Mark> GetMarks()
@@ -87,6 +89,9 @@ namespace VeloTiming
             throw new NotImplementedException();
         }
 
+        private IHubContext<ResultHub, IResultHub> GetHub() {
+            return Startup.GetRequiredService<IHubContext<ResultHub, IResultHub>>();
+        }
     }
 
     public class RaceInfo
@@ -94,13 +99,13 @@ namespace VeloTiming
         public RaceInfo(Start start)
         {
             StartId = start.Id;
-            Racename = start.Race.Name;
+            RaceName = start.Race.Name;
             StartName = start.Name;
             Start = start.RealStart;
         }
 
         public int StartId { get; set; }
-        public string Racename { get; set; }
+        public string RaceName { get; set; }
         public string StartName { get; set; }
         public DateTime? Start { get; set; }
     }
