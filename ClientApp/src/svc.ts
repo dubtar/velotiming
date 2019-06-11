@@ -59,7 +59,7 @@ export default class Service {
         }
     }
 
-    public static SetActiveStart(startId: number) : Promise<number> {
+    public static SetActiveStart(startId: number): Promise<number> {
         return fetch('/api/setActive/' + startId,
             { method: 'post' }).then(this.checkStatus);
     }
@@ -75,9 +75,9 @@ export default class Service {
         else return Service.race = await r.json();
     }
 
-    public static StartRace(): void {
-        if ((!Service.race || !Service.race.start) && Service.sRconnection) {
-            Service.sRconnection.send('RaceStarted');
+    public static async StartRace(startId: number): Promise<void> {
+        if ((!Service.race || !Service.race.start)) {
+            await fetch('/api/startRun/' + startId, { method: 'post' })
         }
     }
 
@@ -170,7 +170,7 @@ export default class Service {
     }
 
     private static async checkStatus(resp: Response) {
-        if (resp.ok) return resp.headers.get('Content-Length') === '0' ?  resp.text() : resp.json()
+        if (resp.ok) return resp.headers.get('Content-Length') === '0' ? resp.text() : resp.json()
         throw new Error(`${resp.statusText} ${await resp.text()}`)
     }
 }

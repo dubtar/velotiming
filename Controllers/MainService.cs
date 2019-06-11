@@ -13,7 +13,7 @@ namespace VeloTiming
 
     public interface IMainService
     {
-        RaceInfo StartRace(int startId);
+        void StartRun();
         RaceInfo GetRaceInfo();
         IEnumerable<Mark> GetMarks();
         Mark AddMark(Mark mark);
@@ -25,9 +25,13 @@ namespace VeloTiming
     {
         private static RaceInfo Race;
         private static List<Mark> Marks;
-        public MainService()
+        private readonly IHubContext<ResultHub, IResultHub> hub;
+
+        public MainService(IHubContext<ResultHub, IResultHub> hub)
         {
+            this.hub = hub;
         }
+
         public RaceInfo GetRaceInfo()
         {
             return Race;
@@ -59,7 +63,7 @@ namespace VeloTiming
         public async Task SetActiveStart(Start start)
         {
             Race = start == null ? null : new RaceInfo(start);
-            await GetHub().Clients.All.ActiveStart(Race);
+            await hub.Clients.All.ActiveStart(Race);
         }
 
         public IEnumerable<Mark> GetMarks()
@@ -84,13 +88,13 @@ namespace VeloTiming
             return mark;
         }
 
-        public RaceInfo StartRace(int startId)
+        public void StartRun()
         {
-            throw new NotImplementedException();
-        }
-
-        private IHubContext<ResultHub, IResultHub> GetHub() {
-            return Startup.GetRequiredService<IHubContext<ResultHub, IResultHub>>();
+            if (Race.Start == null)
+            {
+                Race.Start = DateTime.Now;
+                hub.Clients.All.RaceStarted(Race);
+            }
         }
     }
 

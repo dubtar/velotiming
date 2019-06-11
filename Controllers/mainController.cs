@@ -20,12 +20,21 @@ namespace VeloTiming.Controllers
             this.dataContext = dataContext;
         }
 
+        [HttpPost("startRun/{startId}")]
+        public IActionResult StartRun(int startId)
+        {
+            var currentRace = mainService.GetRaceInfo();
+            if (currentRace == null) return BadRequest("No Active Start");
+            if (currentRace.StartId != startId) return BadRequest("Other start is active");
+            mainService.StartRun();
+            return Ok(startId);
+        }
+
         [HttpPost("setActive/{startId}")]
         public async Task<IActionResult> SetActiveStart(int startId)
         {
             var currentRace = mainService.GetRaceInfo();
             if (currentRace != null && currentRace.StartId == startId) return Ok(startId);
-
 
             try
             {

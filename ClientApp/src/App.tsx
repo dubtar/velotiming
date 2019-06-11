@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { Route, Router, Redirect, Link } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.css";
 import { Navbar, Container, Nav, Button } from "react-bootstrap";
-import Timing from "./timing";
+import Timing from "./Timing/Timing";
 import moment from "moment";
 import "moment/locale/ru";
 import Races from "./Races/Races";

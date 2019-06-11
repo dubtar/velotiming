@@ -1,4 +1,4 @@
-import Svc, { Mark } from './svc';
+import Svc, { Mark } from '../svc';
 import React from 'react';
 
 type Props = {

@@ -1,15 +1,14 @@
 import React, { Component } from "react";
 import { Button, Container } from "react-bootstrap";
-import Timer from "./timer";
-import Svc, { Mark, RaceInfo } from './svc';
-import MarkView from "./markView";
+import Timer from "./Timer";
+import Svc, { Mark, RaceInfo } from '../svc';
+import MarkView from "./MarkView";
 import { Subscription } from "rxjs";
 
 const InitialState = {
     race: null as RaceInfo | null,
     marks: undefined as Mark[] | undefined,
     number: ''
-
 }
 
 type Props = {}
@@ -39,7 +38,7 @@ export default class Timing extends Component<Props, typeof InitialState> {
     }
 
     public start() {
-        Svc.StartRace();
+        Svc.StartRace(this.state.race!!.startId);
     }
 
     public render() {
