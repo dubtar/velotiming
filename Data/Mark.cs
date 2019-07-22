@@ -8,5 +8,6 @@ namespace VeloTiming.Data
         public string TimeSource { get; set; }
         public string Number { get; set; }
         public string NumberSource { get; set; }
+        public bool IsIgnored { get; set; }
     }
 }

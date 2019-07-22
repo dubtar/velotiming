@@ -38,8 +38,11 @@ namespace VeloTiming
 
             services.AddSignalR();
 
-            services.AddSingleton(typeof(IMainService), typeof(MainService));
-            services.AddTransient(typeof(INumberService), typeof(NumberService));
+            services.AddSingleton<IMainService, MainService>();
+            services.AddTransient<INumberService, NumberService>();
+
+            services.AddHostedService<QueuedHostedService>();
+            services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
 
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
