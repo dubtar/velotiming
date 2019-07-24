@@ -24,7 +24,7 @@ namespace VeloTiming
     public class MainService : IMainService
     {
         private static RaceInfo Race;
-        private static List<Mark> Marks = new List<Mark>();
+        private static List<Mark> Results = new List<Mark>();
         private readonly IHubContext<ResultHub, IResultHub> hub;
         private readonly IBackgroundTaskQueue taskQueue;
 
@@ -70,7 +70,7 @@ namespace VeloTiming
 
         public IEnumerable<Mark> GetMarks()
         {
-            IEnumerable<Mark> result = Marks?.AsReadOnly();
+            IEnumerable<Mark> result = Results?.AsReadOnly();
             if (result == null) result = new Mark[0];
             return result;
         }
@@ -78,16 +78,15 @@ namespace VeloTiming
         public void AddMark(Mark mark)
         {
             taskQueue.QueueBackgroundWorkItem( (token) =>
-                ProcessAddMark(mark, token);
+                ProcessAddMark(mark, token)
             );
         }
 
         public void UpdateMark(Mark mark)
         {
-            var ind = Marks.FindIndex(m => m.Id == mark.Id);
-            if (ind < 0) throw new Exception($"Mark not found with id: {mark.Id}");
-            Marks[ind] = mark;
-            return mark;
+            taskQueue.QueueBackgroundWorkItem( (token) =>
+                ProcessUpdateMark(mark, token)
+            );
         }
 
         public void StartRun()
@@ -101,22 +100,31 @@ namespace VeloTiming
 
         #region Process inputs methods. Main logic is here
         const int MARKS_MERGE_SECONDS = 10;
-        private async Task ProcessAddMark(Mark mark, System.Threading.CancellationToken token)
+        private  Task ProcessAddMark(Mark mark, System.Threading.CancellationToken token)
         {
+            var result = Task.CompletedTask;
             if (string.IsNullOrEmpty(mark.Id)) mark.Id = Guid.NewGuid().ToString();
             DateTime markTime = mark.Time ?? DateTime.Now;
-            lock (Marks)
+            lock (Results)
             {
                 var leftTime = markTime.AddSeconds(-MARKS_MERGE_SECONDS);
                 var rightTime = markTime.AddSeconds(MARKS_MERGE_SECONDS);
-                var nearbyMarks = Marks.Where(m => m.Time >= leftTime && m.Time <= rightTime).ToAsyncEnumerable();
-                await foreach (var m in nearbyMarks)
+                var nearbyMarks = Results.Where(m => m.Time >= leftTime && m.Time <= rightTime);
+                // determine type of a mark:
+                // if only time with empty number - then search for number without time and set, or add new time
+                // if number without time - then search for time without number and set. Or 
+                foreach (var m in nearbyMarks)
                 {
-                    if (token.IsCancellationRequested) return;
-
+                    if (token.IsCancellationRequested) break;
                 }
-
             }
+        }
+        private Task ProcessUpdateMark(Mark mark, System.Threading.CancellationToken token)
+        {
+            var restul = Task.CompletedTask;
+            lock(Results)
+
+            return Task.CompletedTask;
         }
     }
     #endregion
