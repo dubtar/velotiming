@@ -24,7 +24,7 @@ namespace VeloTiming
     public class MainService : IMainService
     {
         private static RaceInfo Race;
-        private static List<Mark> Results = new List<Mark>();
+        private readonly static List<Mark> Results = new List<Mark>();
         private readonly IHubContext<ResultHub, IResultHub> hub;
         private readonly IBackgroundTaskQueue taskQueue;
 
@@ -94,6 +94,8 @@ namespace VeloTiming
             if (Race.Start == null)
             {
                 Race.Start = DateTime.Now;
+                lock(Results)
+                    Results.Clear();
                 hub.Clients.All.RaceStarted(Race);
             }
         }
