@@ -5,13 +5,14 @@ namespace VeloTiming.Data
 {
     public class Mark
     {
-        public string Id { get; set; }
+        public string Id { get; set; } = Guid.NewGuid().ToString();
         public DateTime? Time { get; set; }
         public string TimeSource { get; set; }
         public string Number { get; set; }
         public string NumberSource { get; set; }
         public bool IsIgnored { get; set; }
         public List<MarkData> Data { get; } = new List<MarkData>();
+        public DateTime CreatedOn { get; private set; } = DateTime.Now;
     }
     public class MarkData 
     {

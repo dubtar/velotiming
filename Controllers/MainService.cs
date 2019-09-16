@@ -77,15 +77,15 @@ namespace VeloTiming
 
         public void AddMark(Mark mark)
         {
-            taskQueue.QueueBackgroundWorkItem( (token) =>
-                ProcessAddMark(mark, token)
+            taskQueue.QueueBackgroundWorkItem((token) =>
+               ProcessAddMark(mark, token)
             );
         }
 
         public void UpdateMark(Mark mark)
         {
-            taskQueue.QueueBackgroundWorkItem( (token) =>
-                ProcessUpdateMark(mark, token)
+            taskQueue.QueueBackgroundWorkItem((token) =>
+               ProcessUpdateMark(mark, token)
             );
         }
 
@@ -94,7 +94,7 @@ namespace VeloTiming
             if (Race.Start == null)
             {
                 Race.Start = DateTime.Now;
-                lock(Results)
+                lock (Results)
                     Results.Clear();
                 hub.Clients.All.RaceStarted(Race);
             }
@@ -102,31 +102,76 @@ namespace VeloTiming
 
         #region Process inputs methods. Main logic is here
         const int MARKS_MERGE_SECONDS = 10;
-        private  Task ProcessAddMark(Mark mark, System.Threading.CancellationToken token)
+        private Task ProcessAddMark(DateTime? time, string number, string source, System.Threading.CancellationToken token)
         {
-            var result = Task.CompletedTask;
-            if (string.IsNullOrEmpty(mark.Id)) mark.Id = Guid.NewGuid().ToString();
-            DateTime markTime = mark.Time ?? DateTime.Now;
+            DateTime markTime = time ?? DateTime.Now;
             lock (Results)
             {
                 var leftTime = markTime.AddSeconds(-MARKS_MERGE_SECONDS);
                 var rightTime = markTime.AddSeconds(MARKS_MERGE_SECONDS);
-                var nearbyMarks = Results.Where(m => m.Time >= leftTime && m.Time <= rightTime);
+                var nearbyResults = Results.SkipWhile(m => (m.Time ?? m.CreatedOn) < leftTime).TakeWhile(m => (m.Time ?? m.CreatedOn) <= rightTime);
+                bool reorder = false;
+                Mark result = null;
                 // determine type of a mark:
-                // if only time with empty number - then search for number without time and set, or add new time
-                // if number without time - then search for time without number and set. Or 
-                foreach (var m in nearbyMarks)
+                if (time.HasValue && string.IsNullOrWhiteSpace(number))
                 {
-                    if (token.IsCancellationRequested) break;
+                    // if only time with empty number 
+                    // then search for number without time and set, or add new time
+                    result = nearbyResults.FirstOrDefault(r => !r.Time.HasValue);
+                    if (result == null)
+                    {
+                        Results.Add(result = new Mark()); // add new time withough
+                    }
+                    result.Time = time;
+                    result.TimeSource = source;
+                    reorder = true;
                 }
+                else if (!time.HasValue && !string.IsNullOrWhiteSpace(number))
+                {
+                    // if number without time - then search for time without number and set. Or 
+                    result = nearbyResults.FirstOrDefault(r => string.IsNullOrWhiteSpace(r.Number));
+                    if (result == null)
+                    {
+                        Results.Add(result = new Mark());
+                        reorder = true;
+                    }
+                    result.Number = number;
+                    result.NumberSource = source;
+                }
+                else if (time.HasValue && !string.IsNullOrWhiteSpace(number))
+                {
+                    // if have both time and number - search if number already exists 
+                    result = nearbyResults.FirstOrDefault(r => r.Number == number);
+                    if (result == null)
+                    {
+                        Results.Add(result = new Mark());
+                        reorder = true;
+                    }
+                    // TODO: update time based on source priority
+                }
+
+                if (result != null) result.Data.Add(new MarkData
+                {
+                    CreatedOn = DateTime.Now,
+                    Number = number,
+                    Source = source,
+                    Time = time
+                });
+
+                if (reorder)
+                    Results.Sort(delegate (Mark a, Mark b)
+                    {
+                        return (a.Time ?? a.CreatedOn).CompareTo(b.Time ?? b.CreatedOn);
+                    });
             }
+            return Task.CompletedTask;
         }
         private Task ProcessUpdateMark(Mark mark, System.Threading.CancellationToken token)
         {
             var restul = Task.CompletedTask;
-            lock(Results)
+            lock (Results)
 
-            return Task.CompletedTask;
+                return Task.CompletedTask;
         }
     }
     #endregion
@@ -146,5 +191,4 @@ public class RaceInfo
     public string RaceName { get; set; }
     public string StartName { get; set; }
     public DateTime? Start { get; set; }
-}
 }
