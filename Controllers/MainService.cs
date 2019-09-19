@@ -16,7 +16,8 @@ namespace VeloTiming
         void StartRun();
         RaceInfo GetRaceInfo();
         IEnumerable<Mark> GetMarks();
-        void AddMark(Mark mark);
+        void AddTime(DateTime time, string source);
+        void AddNumber(string number, string source);
         void UpdateMark(Mark mark);
         Task SetActiveStart(Start start);
     }
@@ -75,10 +76,17 @@ namespace VeloTiming
             return result;
         }
 
-        public void AddMark(Mark mark)
+        public void AddTime(DateTime time, string source)
         {
             taskQueue.QueueBackgroundWorkItem((token) =>
-               ProcessAddMark(mark, token)
+               ProcessAddMark(time, null, source, token)
+            );
+        }
+
+        public void AddNumber(string number, string source)
+        {
+            taskQueue.QueueBackgroundWorkItem((token) =>
+               ProcessAddMark(null, number, source, token)
             );
         }
 
@@ -96,21 +104,39 @@ namespace VeloTiming
                 Race.Start = DateTime.Now;
                 lock (Results)
                     Results.Clear();
-                hub.Clients.All.RaceStarted(Race);
+                Task task = SendRaceStarted();
             }
         }
+        #region send signalr messages to clients
+        private async Task SendRaceStarted()
+        {
+            await hub.Clients.All.RaceStarted(Race);
+        }
+
+        private async Task SendResultAdded(Mark mark)
+        {
+            await hub.Clients.All.ResultAdded(mark);
+        }
+
+        private async Task SendResultUpdated(Mark mark)
+        {
+            await hub.Clients.All.ResultUpdated(mark);
+        }
+        #endregion
 
         #region Process inputs methods. Main logic is here
-        const int MARKS_MERGE_SECONDS = 10;
+        const int MARKS_MERGE_SECONDS = 30;
         private Task ProcessAddMark(DateTime? time, string number, string source, System.Threading.CancellationToken token)
         {
-            DateTime markTime = time ?? DateTime.Now;
+            DateTime markTime = (time ?? DateTime.Now).ToLocalTime();
+            Task task = null;
             lock (Results)
             {
                 var leftTime = markTime.AddSeconds(-MARKS_MERGE_SECONDS);
-                var rightTime = markTime.AddSeconds(MARKS_MERGE_SECONDS);
+                var rightTime = markTime.AddSeconds(5);
                 var nearbyResults = Results.SkipWhile(m => (m.Time ?? m.CreatedOn) < leftTime).TakeWhile(m => (m.Time ?? m.CreatedOn) <= rightTime);
                 bool reorder = false;
+                bool added = false;
                 Mark result = null;
                 // determine type of a mark:
                 if (time.HasValue && string.IsNullOrWhiteSpace(number))
@@ -121,6 +147,7 @@ namespace VeloTiming
                     if (result == null)
                     {
                         Results.Add(result = new Mark()); // add new time withough
+                        added = true;
                     }
                     result.Time = time;
                     result.TimeSource = source;
@@ -133,7 +160,7 @@ namespace VeloTiming
                     if (result == null)
                     {
                         Results.Add(result = new Mark());
-                        reorder = true;
+                        reorder = added = true;
                     }
                     result.Number = number;
                     result.NumberSource = source;
@@ -144,19 +171,28 @@ namespace VeloTiming
                     result = nearbyResults.FirstOrDefault(r => r.Number == number);
                     if (result == null)
                     {
-                        Results.Add(result = new Mark());
-                        reorder = true;
+                        Results.Add(result = new Mark { Number = number, NumberSource = source });
+                        reorder = added = true;
                     }
                     // TODO: update time based on source priority
+                    result.Time = time;
+                    result.TimeSource = source;
                 }
 
-                if (result != null) result.Data.Add(new MarkData
+                if (result != null)
                 {
-                    CreatedOn = DateTime.Now,
-                    Number = number,
-                    Source = source,
-                    Time = time
-                });
+                    result.Data.Add(new MarkData
+                    {
+                        CreatedOn = DateTime.Now,
+                        Number = number,
+                        Source = source,
+                        Time = time
+                    });
+                    if (added)
+                        task = SendResultAdded(result);
+                    else 
+                        task =  SendResultUpdated(result);
+                }
 
                 if (reorder)
                     Results.Sort(delegate (Mark a, Mark b)
@@ -164,14 +200,16 @@ namespace VeloTiming
                         return (a.Time ?? a.CreatedOn).CompareTo(b.Time ?? b.CreatedOn);
                     });
             }
-            return Task.CompletedTask;
+            return task ?? Task.CompletedTask;
         }
+
         private Task ProcessUpdateMark(Mark mark, System.Threading.CancellationToken token)
         {
-            var restul = Task.CompletedTask;
+            var result = Task.CompletedTask;
             lock (Results)
-
-                return Task.CompletedTask;
+            {
+            }
+            return Task.CompletedTask;
         }
     }
     #endregion

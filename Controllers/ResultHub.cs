@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.SignalR;
+using System;
 using System.Threading.Tasks;
 using VeloTiming.Data;
-using VeloTiming.Services;
 
 namespace VeloTiming.Hubs
 {
@@ -20,14 +20,16 @@ namespace VeloTiming.Hubs
         {
             this.raceService = raceService;
         }
-        public void ResultAdded(Mark mark)
+
+        // Methods
+        public void AddTime(DateTime time, string source)
         {
-            raceService.AddMark(mark);
+            raceService.AddTime(time, source);
         }
 
-        public void ResultUpdated(Mark mark)
+        public void AddNumber(string number, string source)
         {
-            raceService.UpdateMark(mark);
+            raceService.AddNumber(number, source);
         }
     }
 }
