@@ -78,6 +78,7 @@ namespace VeloTiming
 
         public void AddTime(DateTime time, string source)
         {
+            time = time.ToLocalTime();
             taskQueue.QueueBackgroundWorkItem((token) =>
                ProcessAddMark(time, null, source, token)
             );
@@ -128,7 +129,7 @@ namespace VeloTiming
         const int MARKS_MERGE_SECONDS = 30;
         private Task ProcessAddMark(DateTime? time, string number, string source, System.Threading.CancellationToken token)
         {
-            DateTime markTime = (time ?? DateTime.Now).ToLocalTime();
+            DateTime markTime = time ?? DateTime.Now;
             Task task = null;
             lock (Results)
             {

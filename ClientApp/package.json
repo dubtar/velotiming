@@ -40,6 +40,7 @@
   "devDependencies": {
     "@types/react-router-dom": "^4.3.1",
     "@types/yup": "^0.26.12",
-    "tslint-react": "^3.6.0"
+    "tslint-react": "^3.6.0",
+    "tslint-config-prettier": "^1.18.0"
   }
 }

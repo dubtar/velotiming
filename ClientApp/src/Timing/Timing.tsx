@@ -29,6 +29,7 @@ export default class Timing extends Component<Props, typeof InitialState> {
         document.addEventListener('keydown', this.onKeyDown);
         this.marksSubscription = Svc.Marks.subscribe(marks => this.setState({ marks }));
         this.raceSubscription = Svc.Race.subscribe(race => this.setState({ race }));
+        Svc.GetMarks();
     }
 
     public componentWillUnmount() {
