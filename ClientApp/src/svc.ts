@@ -14,6 +14,7 @@ export interface Mark {
     createdOn: Date;
     time?: Date | null;
     number?: string | null;
+    name: string | null;
     timeSource?: string;
     numberSource?: string;
 }

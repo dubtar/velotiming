@@ -9,6 +9,7 @@ namespace VeloTiming.Data
         public string Id { get; set; } = Guid.NewGuid().ToString();
         public DateTime? Time { get; set; }
         public string TimeSource { get; set; }
+        public string Name { get; set; }
         public string Number { get; set; }
         public string NumberSource { get; set; }
         public bool IsIgnored { get; set; }

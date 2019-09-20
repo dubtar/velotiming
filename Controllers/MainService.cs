@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
@@ -13,13 +14,13 @@ namespace VeloTiming
 
     public interface IMainService
     {
-        void StartRun();
+        void StartRun(DateTime realStart);
         RaceInfo GetRaceInfo();
         IEnumerable<Mark> GetMarks();
         void AddTime(DateTime time, string source);
         void AddNumber(string number, string source);
         void UpdateMark(Mark mark);
-        Task SetActiveStart(Start start);
+        Task SetActiveStart(Start start, Dictionary<string, string> numbers);
         void AddNumberAndTime(string id, DateTime time, string v);
     }
 
@@ -54,8 +55,9 @@ namespace VeloTiming
                         var activeStart = await dataContext.Starts.Include(s => s.Race).FirstOrDefaultAsync(s => s.IsActive);
                         if (activeStart != null)
                         {
-                            Race = new RaceInfo(activeStart);
-                            // TODO: Load Marks
+                            var riders = await BuildNumbersDictionary(dataContext, activeStart.Id);
+                            Race = new RaceInfo(activeStart, riders);
+                            // Load Marks
                             Results.Clear();
                             Results.AddRange(dataContext.Results);
                         }
@@ -68,9 +70,15 @@ namespace VeloTiming
             }
         }
 
-        public async Task SetActiveStart(Start start)
+        public static async Task<Dictionary<string, string>> BuildNumbersDictionary(DataContext dataContext, int startId)
         {
-            Race = start == null ? null : new RaceInfo(start);
+            var categoryIds = await dataContext.Set<StartCategory>().Where(s => s.Start.Id == startId).Select(s => s.Category.Id).ToArrayAsync();
+            var riders = await dataContext.Set<Rider>().Where(r => categoryIds.Contains(r.Category.Id)).ToDictionaryAsync(r => r.Number.Id, r => $"{r.LastName} {r.FirstName}");
+            return riders;
+        }
+        public async Task SetActiveStart(Start start, Dictionary<string, string> numbers)
+        {
+            Race = start == null ? null : new RaceInfo(start, numbers);
             await hub.Clients.All.ActiveStart(Race);
         }
 
@@ -110,11 +118,11 @@ namespace VeloTiming
             );
         }
 
-        public void StartRun()
+        public void StartRun(DateTime date)
         {
             if (Race.Start == null)
             {
-                Race.Start = DateTime.Now;
+                Race.Start = date;
                 lock (Results)
                     Results.Clear();
                 Task task = SendRaceStarted();
@@ -194,6 +202,10 @@ namespace VeloTiming
 
                 if (result != null)
                 {
+                    if (string.IsNullOrWhiteSpace(result.Number) || !Race.Numbers.TryGetValue(result.Number, out var rider))
+                        result.Name = null;
+                    else
+                        result.Name = rider;
                     result.Data.Add(new MarkData
                     {
                         CreatedOn = DateTime.Now,
@@ -220,13 +232,17 @@ namespace VeloTiming
         private async Task StoreResult(Mark result)
         {
             if (result == null || Race == null) return;
-            using (var dataContext = Startup.GetRequiredService<DataContext>())
+            var serviceScopeFactory = Startup.GetRequiredService<IServiceScopeFactory>();
+            using (var scope = serviceScopeFactory.CreateScope())
             {
-                bool exists = await dataContext.Results.AsNoTracking().AnyAsync(r => r.Id == result.Id);
-                if (exists)
-                    dataContext.Update(result);
-                else
-                    dataContext.Add(result);
+                using (var dataContext = scope.ServiceProvider.GetService<DataContext>())
+                {
+                    bool exists = await dataContext.Results.AsNoTracking().AnyAsync(r => r.Id == result.Id);
+                    if (exists)
+                        dataContext.Update(result);
+                    else
+                        dataContext.Add(result);
+                }
             }
         }
 
@@ -244,16 +260,18 @@ namespace VeloTiming
 
 public class RaceInfo
 {
-    public RaceInfo(Start start)
+    public RaceInfo(Start start, Dictionary<string, string> numbers)
     {
         StartId = start.Id;
         RaceName = start.Race.Name;
         StartName = start.Name;
         Start = start.RealStart;
+        Numbers = new ReadOnlyDictionary<string, string>(numbers);
     }
 
     public int StartId { get; set; }
     public string RaceName { get; set; }
     public string StartName { get; set; }
     public DateTime? Start { get; set; }
+    public ReadOnlyDictionary<string, string> Numbers { get; private set; }
 }

@@ -21,12 +21,17 @@ namespace VeloTiming.Controllers
         }
 
         [HttpPost("startRun/{startId}")]
-        public IActionResult StartRun(int startId)
+        public async Task<IActionResult> StartRun(int startId)
         {
             var currentRace = mainService.GetRaceInfo();
             if (currentRace == null) return BadRequest("No Active Start");
             if (currentRace.StartId != startId) return BadRequest("Other start is active");
-            mainService.StartRun();
+            var start = await dataContext.Starts.FindAsync(startId);
+            if (start == null) return BadRequest($"Start not found by Id '{startId}");
+            if (start.RealStart == null) {
+                start.RealStart = DateTime.Now;
+                mainService.StartRun(start.RealStart.Value);
+            }
             return Ok(startId);
         }
 
@@ -43,7 +48,7 @@ namespace VeloTiming.Controllers
                 start.IsActive = true;
 
                 await dataContext.SaveChangesAsync();
-                await mainService.SetActiveStart(start);
+                await mainService.SetActiveStart(start, await MainService.BuildNumbersDictionary(dataContext, start.Id));
                 return Ok(startId);
             }
             catch (KeyNotFoundException)
@@ -64,7 +69,7 @@ namespace VeloTiming.Controllers
             {
                 DeactivateAllActiveStarts();
                 await dataContext.SaveChangesAsync();
-                await mainService.SetActiveStart(null);
+                await mainService.SetActiveStart(null, null);
             }
         }
 
@@ -78,16 +83,33 @@ namespace VeloTiming.Controllers
         }
 
         [HttpGet("race")]
-        public RaceInfo GetCurrentRace()
+        public IActionResult GetCurrentRace()
         {
-            return mainService.GetRaceInfo();
+            var race = mainService.GetRaceInfo();
+            var response = race == null ? null :
+            new
+            {
+                RaceName = race.RaceName,
+                StartName = race.StartName,
+                StartId = race.StartId,
+                Start = race.Start
+            };
+            return Ok(response);
         }
 
         [HttpGet("marks")]
-        public IEnumerable<Mark> GetMarks()
+        public IActionResult GetMarks()
         {
-
-            return mainService.GetMarks();
+            return Ok(mainService.GetMarks().Select(m => new
+            {
+                Id = m.Id,
+                CreatedOn = m.CreatedOn,
+                Time = m.Time,
+                Number = m.Number,
+                Name = m.Name,
+                TimeSource = m.TimeSource,
+                NumberSource = m.NumberSource
+            }));
         }
     }
 }
