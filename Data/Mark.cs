@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace VeloTiming.Data
 {
@@ -11,7 +12,7 @@ namespace VeloTiming.Data
         public string Number { get; set; }
         public string NumberSource { get; set; }
         public bool IsIgnored { get; set; }
-        public List<MarkData> Data { get; } = new List<MarkData>();
+        public IList<MarkData> Data { get; set; } = new List<MarkData>();
         public DateTime CreatedOn { get; private set; } = DateTime.Now;
     }
     public class MarkData 
@@ -21,5 +22,4 @@ namespace VeloTiming.Data
         public string Source { get; set; }
         public DateTime CreatedOn { get; set; }
     }
-
 }

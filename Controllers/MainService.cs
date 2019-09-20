@@ -20,6 +20,7 @@ namespace VeloTiming
         void AddNumber(string number, string source);
         void UpdateMark(Mark mark);
         Task SetActiveStart(Start start);
+        void AddNumberAndTime(string id, DateTime time, string v);
     }
 
     public class MainService : IMainService
@@ -39,7 +40,7 @@ namespace VeloTiming
         {
             return Race;
         }
-        public static void Init(IServiceProvider serviceProvider)
+        public static async Task Init(IServiceProvider serviceProvider)
         {
             using (var serviceScope = serviceProvider.CreateScope())
             {
@@ -47,14 +48,18 @@ namespace VeloTiming
 
                 try
                 {
-                    var dataContext = services.GetRequiredService<DataContext>();
-
-                    var activeStart = dataContext.Starts.Include(s => s.Race).FirstOrDefault(s => s.IsActive);
-                    if (activeStart != null)
+                    using (var dataContext = services.GetRequiredService<DataContext>())
                     {
-                        Race = new RaceInfo(activeStart);
+
+                        var activeStart = await dataContext.Starts.Include(s => s.Race).FirstOrDefaultAsync(s => s.IsActive);
+                        if (activeStart != null)
+                        {
+                            Race = new RaceInfo(activeStart);
+                            // TODO: Load Marks
+                            Results.Clear();
+                            Results.AddRange(dataContext.Results);
+                        }
                     }
-                    // TODO: Load Marks
                 }
                 catch (Exception ex)
                 {
@@ -88,6 +93,13 @@ namespace VeloTiming
         {
             taskQueue.QueueBackgroundWorkItem((token) =>
                ProcessAddMark(null, number, source, token)
+            );
+        }
+
+        public void AddNumberAndTime(string number, DateTime time, string source)
+        {
+            taskQueue.QueueBackgroundWorkItem((token) =>
+                ProcessAddMark(time, number, source, token)
             );
         }
 
@@ -191,8 +203,9 @@ namespace VeloTiming
                     });
                     if (added)
                         task = SendResultAdded(result);
-                    else 
-                        task =  SendResultUpdated(result);
+                    else
+                        task = SendResultUpdated(result);
+                    task = Task.WhenAll(task, StoreResult(result));
                 }
 
                 if (reorder)
@@ -202,6 +215,19 @@ namespace VeloTiming
                     });
             }
             return task ?? Task.CompletedTask;
+        }
+
+        private async Task StoreResult(Mark result)
+        {
+            if (result == null || Race == null) return;
+            using (var dataContext = Startup.GetRequiredService<DataContext>())
+            {
+                bool exists = await dataContext.Results.AsNoTracking().AnyAsync(r => r.Id == result.Id);
+                if (exists)
+                    dataContext.Update(result);
+                else
+                    dataContext.Add(result);
+            }
         }
 
         private Task ProcessUpdateMark(Mark mark, System.Threading.CancellationToken token)

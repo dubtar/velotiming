@@ -35,6 +35,7 @@ export default class Service {
 
         Service.sRconnection.on('ResultAdded', (mark: Mark) => {
             let inserted = false;
+            this.ConvertMarkTimes(mark);
             for (let i = 0; i < Service.marks.length; i++) {
                 const curMark = Service.marks[i];
                 const curMarkTime = curMark.time || curMark.createdOn;
@@ -51,6 +52,7 @@ export default class Service {
 
         Service.sRconnection.on('ResultUpdated', (mark: Mark) => {
             const ind = Service.marks.findIndex(m => m.id === mark.id);
+            this.ConvertMarkTimes(mark);
             if (ind >= 0) {
                 Service.marks[ind] = mark;
                 Service.onMarksChange();
@@ -90,7 +92,7 @@ export default class Service {
         if (Service.race) return Promise.resolve(Service.race);
         const r = await fetch('/api/race');
         if (r.status === 204) return null;
-        else return Service.race = await r.json();
+        else return Service.race = Service.UpdateRaceTimes(await r.json());
     }
 
     public static async StartRace(startId: number): Promise<void> {
@@ -103,13 +105,12 @@ export default class Service {
         const r = await fetch('/api/marks');
         const marks = await r.json();
         if (Array.isArray(marks)) {
+            marks.forEach(Service.ConvertMarkTimes)
             Service.marks = marks;
             Service.onMarksChange();
             return marks;
         }
     }
-
-
     public static AddTime(source: string) {
         if (Service.sRconnection) {
             Service.sRconnection.send('AddTime', new Date(), source);
@@ -122,8 +123,11 @@ export default class Service {
         }
     }
 
-    public static formatTime(time: Date | null | undefined, start: Date): string {
-        if (!time) return '--:--';
+    public static formatTime(time: Date | null | undefined, start: Date | null = null): string {
+        if (!start) {
+            if (Service.race) start = Service.race.start;
+        }
+        if (!time || !start) return '--:--';
         const dur = moment.duration(moment(time).diff(start));
         const result = Math.floor(dur.asHours()) + moment.utc(dur.asMilliseconds()).format(":mm:ss")
         return result;
@@ -169,4 +173,18 @@ export default class Service {
         if (resp.ok) return resp.headers.get('Content-Length') === '0' ? resp.text() : resp.json()
         throw new Error(`${resp.statusText} ${await resp.text()}`)
     }
+
+    private static ConvertMarkTimes(mark: Mark): void {
+        if (!mark) return;
+        if (mark.createdOn) mark.createdOn = moment(mark.createdOn).toDate()
+        if (mark.time) mark.time = moment(mark.time).toDate()
+    }
+
+    private static UpdateRaceTimes(race: RaceInfo) {
+        if (race) {
+            if (race.start) race.start = moment(race.start).toDate()
+        }
+        return race;
+    }
+
 }

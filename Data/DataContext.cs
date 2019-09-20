@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 
 namespace VeloTiming.Data
 {
@@ -11,6 +13,8 @@ namespace VeloTiming.Data
         public DbSet<Rider> Riders { get; set; }
         public DbSet<Start> Starts { get; set; }
 
+        public DbSet<Mark> Results {get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<StartCategory>()
@@ -19,6 +23,10 @@ namespace VeloTiming.Data
             modelBuilder.Entity<StartCategory>()
                 .HasOne(sc => sc.Start)
                 .WithMany(s => s.Categories).IsRequired();
+            modelBuilder.Entity<Mark>().Property(m => m.Data).HasConversion(
+                v => JsonConvert.SerializeObject(v, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }),
+                v => JsonConvert.DeserializeObject<IList<MarkData>>(v, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore })
+            );
         }
     }
 }

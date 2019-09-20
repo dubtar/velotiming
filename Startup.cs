@@ -92,7 +92,7 @@ namespace VeloTiming
                 }
             });
 
-            MainService.Init(app.ApplicationServices);
+            System.Threading.Tasks.Task task = MainService.Init(app.ApplicationServices);
             serviceProvider = app.ApplicationServices;
             // listen to websocket to /rfid
             // app.UseWebSockets().ListenRfidWebScoket();

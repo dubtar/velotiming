@@ -23,8 +23,9 @@ const schema = yupObject({
 })
 
 const EditCategory: React.SFC<Props> = (props: Props) => {
+    const onReset = () => props.onSubmit(undefined);
     return (
-        <Formik validationSchema={schema} onSubmit={props.onSubmit} initialValues={props.category} onReset={() => props.onSubmit(undefined)}>
+        <Formik validationSchema={schema} onSubmit={props.onSubmit} initialValues={props.category} onReset={onReset}>
             {({ handleSubmit, handleChange, handleReset, values, touched, errors }) => (
                 <Form noValidate onSubmit={handleSubmit} onReset={handleReset} className="bg-light p-3">
                     <h3>{values.id ? 'Правка категории' : 'Новая категория'}</h3>

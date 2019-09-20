@@ -2,12 +2,12 @@ import React, { Component } from "react";
 import { Button, Container } from "react-bootstrap";
 import Timer from "./Timer";
 import Svc, { Mark, RaceInfo } from '../svc';
-import MarkView from "./MarkView";
 import { Subscription } from "rxjs";
+import ResultTable from "./ResultTable";
 
 const InitialState = {
     race: null as RaceInfo | null,
-    marks: undefined as Mark[] | undefined,
+    marks: null as Mark[] | null,
     number: ''
 }
 
@@ -44,7 +44,7 @@ export default class Timing extends Component<Props, typeof InitialState> {
 
     public render() {
         if (!this.state.race) return (<Container>Нет текущего старта.</Container>)
-        
+
         return (
             <Container className="flex-fill">
                 <div className="d-flex h-100 flex-column">
@@ -56,8 +56,7 @@ export default class Timing extends Component<Props, typeof InitialState> {
                         {!this.state.race.start &&
                             <Button onClick={this.start} className="m-3">Начать гонку</Button>
                         }
-                        {this.state.race.start && this.state.marks && this.state.marks.map((mark, ind) =>
-                            <MarkView mark={mark} start={this.state.race!!.start!!} key={ind} />)}
+                        {this.state.race.start && <ResultTable marks={this.state.marks} />}
                     </div>
                     {/* Нижняя часть */}
                     <div className="bg-light">

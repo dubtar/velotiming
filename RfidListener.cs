@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -9,10 +10,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
-using VeloTiming.Data;
 using VeloTiming.Hubs;
 using VeloTiming.Services;
 
@@ -124,7 +123,24 @@ namespace VeloTiming
                                 message = message.Substring(start);
                                 var data = JsonConvert.DeserializeObject<RfidData>(message);
                                 if (data != null && !string.IsNullOrEmpty(data.RFIDStamp))
-                                    SendRfidId(data.RFIDStamp);
+                                {
+                                    // parse times
+                                    DateTime? time = null;
+                                    const string TIME_FORMAT = "HH:mm:ss.fff";
+                                    if (!string.IsNullOrWhiteSpace(data.MeanRead) &&
+                                        DateTime.TryParseExact(data.MeanRead, TIME_FORMAT, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var meanTime)) {
+                                            time = DateTime.Now.Date.AddHours(meanTime.Hour).AddMinutes(meanTime.Minute).AddSeconds(meanTime.Second).AddMilliseconds(meanTime.Millisecond);
+                                    }
+                                    else if (!string.IsNullOrWhiteSpace(data.FirstRead) &&
+                                        DateTime.TryParseExact(data.MeanRead, TIME_FORMAT, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var firstTime)) {
+                                            time = DateTime.Now.Date.AddHours(firstTime.Hour).AddMinutes(firstTime.Minute).AddSeconds(firstTime.Second).AddMilliseconds(firstTime.Millisecond);
+                                    }
+                                    if (time == null)
+                                        time = DateTime.Now;
+
+                                    // TODO: replace with time from data
+                                    SendRfidId(data.RFIDStamp, time.Value);
+                                }
                             }
                         }
                         catch (Exception ex)
@@ -141,7 +157,7 @@ namespace VeloTiming
             catch { }
         }
 
-        private static async void SendRfidId(string rfidId)
+        private static async void SendRfidId(string rfidId, DateTime time)
         {
             var serviceScopeFactory = Startup.GetRequiredService<IServiceScopeFactory>();
             using (var scope = serviceScopeFactory.CreateScope())
@@ -150,8 +166,11 @@ namespace VeloTiming
                 var sendRfid = hubContext.Clients.All.SendAsync("RfidFound", rfidId);
                 var numberService = scope.ServiceProvider.GetService<INumberService>();
                 var number = await numberService.GetNumberByRfid(rfidId);
-                if (number != null)
-                    await hubContext.Clients.All.SendAsync("NumberFound", number.Id);
+                if (number != null) {
+                    Task _task = hubContext.Clients.All.SendAsync("NumberFound", number.Id);
+                    var mainService = scope.ServiceProvider.GetService<IMainService>();
+                    mainService.AddNumberAndTime(number.Id, time, "Rfid");
+                }
                 await sendRfid;
             }
         }
@@ -189,7 +208,7 @@ namespace VeloTiming
                     if (data != null && !String.IsNullOrEmpty(data.RFIDStamp))
                     {
                         var hubContext = context.RequestServices.GetRequiredService<IHubContext<RfidHub>>();
-                        await hubContext.Clients.All.SendAsync("RfidFound", data.RFIDStamp);
+                        var _task = hubContext.Clients.All.SendAsync("RfidFound", data.RFIDStamp);
                     }
                 }
                 catch (Exception ex) { Console.Error.WriteLine(ex.Message); }
