@@ -225,7 +225,6 @@ namespace VeloTiming
                     else
                         task = SendResultUpdated(result);
                     task = Task.WhenAll(task, StoreResult(result));
-
                 }
             }
             return task ?? Task.CompletedTask;

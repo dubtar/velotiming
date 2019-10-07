@@ -12,20 +12,38 @@ namespace VeloTiming.Tests
     {
         MainService sut;
 
-
         public MainServiceTests()
         {
+            // Mock TaskQueue to run synchronosly
             var taskQueueMock = new Mock<IBackgroundTaskQueue>();
-
             taskQueueMock.Setup(t => t.QueueBackgroundWorkItem(It.IsAny<Func<System.Threading.CancellationToken, Task>>()))
                 .Callback<Func<System.Threading.CancellationToken, Task>>(action =>
                 {
                     action(new System.Threading.CancellationToken()).Wait();
                 });
 
-            var iHubContextMock = new Mock<IHubContext<ResultHub, IResultHub>();
+            // Mock IHub
+            var iHubContextMock = new Mock<IHubContext<ResultHub, IResultHub>>();
+            var mockClients = new Mock<IHubClients<IResultHub>>();
+            mockClients.Setup(c => c.All).Returns(Mock.Of<IResultHub>());
+            iHubContextMock.Setup(h => h.Clients).Returns(() => mockClients.Object);
 
+            // create System under test
             sut = new MainService(iHubContextMock.Object, taskQueueMock.Object);
+
+            sut.SetActiveStart(new Data.Start
+            {
+                Id = 12,
+                Name = "Test start",
+                Race = new Data.Race
+                {
+                    Name = "Test race"
+                },
+                IsActive = true,
+                RealStart = new DateTime(2019, 1, 1, 1, 0, 0, 0)
+            }, new System.Collections.Generic.Dictionary<string, string> {
+                { "1", "Пупкин Вася"}
+            }).Wait();
         }
 
         [Fact]
