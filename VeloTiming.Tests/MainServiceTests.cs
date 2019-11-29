@@ -72,16 +72,63 @@ namespace VeloTiming.Tests
         }
 
         [Fact]
-        public void Test1()
+        public void AddNumberAndTime_CalculatePlaceAndLaps_Pass()
         {
+            DateTime start = new System.DateTime(2019, 1, 1, 1, 1, 1);
 
-            sut.AddNumberAndTime("1", new System.DateTime(2019, 1, 1, 1, 1, 1), "rfid");
+            sut.AddNumberAndTime("1", start.AddSeconds(100), "rfid");
 
-            var results = sut.GetMarks().ToArray();
-            Assert.Single(results);
-            Assert.Equal("1", results[0].Number);
-            Assert.Equal(1, results[0].Place);
-            Assert.Equal(1, results[0].Lap);
+            Assert.Single(sut.GetMarks());
+            AssertResult("1", 1, 1);
+
+            sut.AddNumberAndTime("2", start.AddSeconds(110), "rfid");
+            AssertResult("2", 2, 1);
+            sut.AddNumberAndTime("1", start.AddSeconds(220), "rfid");
+            AssertResult("1", 1, 2);
+            sut.AddNumberAndTime("2", start.AddSeconds(230), "rfid");
+            AssertResult("2", 2, 2);
+            sut.AddNumberAndTime("2", start.AddSeconds(330), "rfid");
+            AssertResult("2", 1, 3);
+            sut.AddNumberAndTime("1", start.AddSeconds(340), "rfid");
+            AssertResult("1", 2, 3);
+            sut.AddNumberAndTime("2", start.AddSeconds(430), "rfid");
+            AssertResult("2", 1, 4);
+            sut.AddNumberAndTime("2", start.AddSeconds(530), "rfid");
+            AssertResult("2", 1, 5);
+            sut.AddNumberAndTime("1", start.AddSeconds(540), "rfid");
+            AssertResult("1", 2, 4);
+        }
+
+        [Fact]
+        public void Test2()
+        {
+            const string s = "source";
+            DateTime start = DateTime.Now.AddSeconds(-1000);
+            sut.AddNumber("1", s);
+            AssertResult("1", 1, 1);
+            sut.AddNumber("2", s);
+            AssertResult("2", 2, 1);
+            sut.AddNumber("3", s);
+            AssertResult("3", 3, 1);
+            sut.AddTime(start.AddSeconds(100), s);
+            sut.AddTime(start.AddSeconds(110), s);
+            sut.AddTime(start.AddSeconds(113), s);
+            AssertResult("3", 3, 1);
+            sut.AddTime(start.AddSeconds(203), s);
+            AssertResult("", -1, -1);
+            sut.AddNumber("3", s);
+            AssertResult("3", 1, 2);
+            sut.AddNumber("2", s);
+            sut.AddTime(start.AddSeconds(206), s);
+            AssertResult("2", 2, 2);
+        }
+
+        private void AssertResult(string number, int place, int lap)
+        {
+            var result = sut.GetMarks().Last();
+            Assert.Equal(number, result.Number);
+            Assert.Equal(place, result.Place);
+            Assert.Equal(lap, result.Lap);
         }
     }
 }
