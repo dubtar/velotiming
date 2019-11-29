@@ -5,6 +5,8 @@ using VeloTiming.Hubs;
 using System.Threading.Tasks;
 using System;
 using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
+using VeloTiming.Data;
 
 namespace VeloTiming.Tests
 {
@@ -28,8 +30,31 @@ namespace VeloTiming.Tests
             mockClients.Setup(c => c.All).Returns(Mock.Of<IResultHub>());
             iHubContextMock.Setup(h => h.Clients).Returns(() => mockClients.Object);
 
+            // mock IServiceProvider
+            var serviceProvider = new Mock<IServiceProvider>();
+
+            var serviceScope = new Mock<IServiceScope>();
+            serviceScope.Setup(x => x.ServiceProvider).Returns(serviceProvider.Object);
+
+            var serviceScopeFactory = new Mock<IServiceScopeFactory>();
+            serviceScopeFactory.Setup(x => x.CreateScope()).Returns(serviceScope.Object);
+
+            serviceProvider
+                .Setup(x => x.GetService(typeof(IServiceScopeFactory)))
+                .Returns(serviceScopeFactory.Object);
+            serviceProvider
+                .Setup(x => x.GetService(typeof(IHubContext<ResultHub, IResultHub>)))
+                .Returns(iHubContextMock.Object);
+            serviceProvider
+                .Setup(x => x.GetService(typeof(IBackgroundTaskQueue)))
+                .Returns(taskQueueMock.Object);
+
+            serviceProvider
+                .Setup(x => x.GetService(typeof(IResultRepository)))
+                .Returns(new Mock<IResultRepository>().Object);
+
             // create System under test
-            sut = new MainService(iHubContextMock.Object, taskQueueMock.Object);
+            sut = new MainService(serviceProvider.Object);
 
             sut.SetActiveStart(new Data.Start
             {

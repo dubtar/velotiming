@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
@@ -28,20 +29,24 @@ namespace VeloTiming
     {
         private static RaceInfo Race;
         private readonly static List<Mark> Results = new List<Mark>();
+        private readonly IServiceProvider serviceProvider;
         private readonly IHubContext<ResultHub, IResultHub> hub;
         private readonly IBackgroundTaskQueue taskQueue;
 
-        public MainService(IHubContext<ResultHub, IResultHub> hub, IBackgroundTaskQueue taskQueue)
+        public MainService(IServiceProvider serviceProvider)
+        //, , IResultHub> hub, IBackgroundTaskQueue taskQueue)
         {
-            this.hub = hub;
-            this.taskQueue = taskQueue;
+            this.serviceProvider = serviceProvider;
+            this.hub = serviceProvider.GetService<IHubContext<ResultHub, IResultHub>>();
+            this.taskQueue = serviceProvider.GetService<IBackgroundTaskQueue>();
+            Init().Wait();
         }
 
         public RaceInfo GetRaceInfo()
         {
             return Race;
         }
-        public static async Task Init(IServiceProvider serviceProvider)
+        private async Task Init()
         {
             using (var serviceScope = serviceProvider.CreateScope())
             {
@@ -267,17 +272,11 @@ namespace VeloTiming
         private async Task StoreResult(Mark result)
         {
             if (result == null || Race == null) return;
-            var serviceScopeFactory = Startup.GetRequiredService<IServiceScopeFactory>();
-            using (var scope = serviceScopeFactory.CreateScope())
+            var scopeFactory = serviceProvider.GetService<IServiceScopeFactory>();
+            using (var scope = scopeFactory.CreateScope())
             {
-                using (var dataContext = scope.ServiceProvider.GetService<DataContext>())
-                {
-                    bool exists = await dataContext.Results.AsNoTracking().AnyAsync(r => r.Id == result.Id);
-                    if (exists)
-                        dataContext.Update(result);
-                    else
-                        dataContext.Add(result);
-                }
+                var resultService = scope.ServiceProvider.GetService<IResultRepository>();
+                await resultService.AddOrUpdateResult(result);
             }
         }
 

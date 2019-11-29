@@ -17,10 +17,19 @@ using VeloTiming.Services;
 
 namespace VeloTiming
 {
-    internal static class RfidListener
+    public interface IRfidListener
     {
-        internal static void ListenTCP()
+        
+    }
+    internal class RfidListener: IRfidListener
+    {
+        // Thread signal.  
+        private ManualResetEvent allDone = new ManualResetEvent(false);
+        private readonly IServiceScopeFactory serviceScopeFactory;
+
+        public RfidListener(IServiceScopeFactory serviceScopeFactory)
         {
+            this.serviceScopeFactory = serviceScopeFactory;
             new System.Threading.Thread(StartListening).Start();
         }
 
@@ -37,9 +46,7 @@ namespace VeloTiming
             public StringBuilder sb = new StringBuilder();
         }
 
-        // Thread signal.  
-        private static ManualResetEvent allDone = new ManualResetEvent(false);
-        private static void StartListening()
+        private void StartListening()
         {
             int port = 12345;
 
@@ -70,7 +77,7 @@ namespace VeloTiming
             }
             Console.WriteLine("TCP Listener exited");
         }
-        private static void AcceptCallback(IAsyncResult ar)
+        private void AcceptCallback(IAsyncResult ar)
         {
             // Signal the main thread to continue.  
             allDone.Set();
@@ -85,7 +92,7 @@ namespace VeloTiming
             handler.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
                 new AsyncCallback(ReadCallback), state);
         }
-        private static void ReadCallback(IAsyncResult ar)
+        private void ReadCallback(IAsyncResult ar)
         {
             try
             {
@@ -157,9 +164,8 @@ namespace VeloTiming
             catch { }
         }
 
-        private static async void SendRfidId(string rfidId, DateTime time)
+        private async void SendRfidId(string rfidId, DateTime time)
         {
-            var serviceScopeFactory = Startup.GetRequiredService<IServiceScopeFactory>();
             using (var scope = serviceScopeFactory.CreateScope())
             {
                 var hubContext = scope.ServiceProvider.GetRequiredService<IHubContext<RfidHub>>();
@@ -175,26 +181,26 @@ namespace VeloTiming
             }
         }
 
-        public static void ListenRfidWebScoket(this IApplicationBuilder app)
-        {
-            // listen to websocket
-            app.Use(async (context, next) =>
-            {
-                if (context.Request.Path == "/rfid")
-                {
-                    if (context.WebSockets.IsWebSocketRequest)
-                    {
-                        WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                        await RfidListener.Receive(context, webSocket);
-                    }
-                    else
-                        context.Response.StatusCode = 400;
-                }
-                else
-                    await next();
-            });
+        // public static void ListenRfidWebScoket(this IApplicationBuilder app)
+        // {
+        //     // listen to websocket
+        //     app.Use(async (context, next) =>
+        //     {
+        //         if (context.Request.Path == "/rfid")
+        //         {
+        //             if (context.WebSockets.IsWebSocketRequest)
+        //             {
+        //                 WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync();
+        //                 await RfidListener.Receive(context, webSocket);
+        //             }
+        //             else
+        //                 context.Response.StatusCode = 400;
+        //         }
+        //         else
+        //             await next();
+        //     });
 
-        }
+        // }
         internal async static Task Receive(HttpContext context, WebSocket webSocket)
         {
             var buffer = new byte[1024 * 4];

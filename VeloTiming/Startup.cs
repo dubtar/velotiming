@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using VeloTiming.Data;
 using VeloTiming.Hubs;
 using VeloTiming.Services;
 
@@ -39,7 +40,10 @@ namespace VeloTiming
             services.AddSignalR();
 
             services.AddSingleton<IMainService, MainService>();
+            services.AddSingleton<IRfidListener, RfidListener>();
+
             services.AddTransient<INumberService, NumberService>();
+            services.AddTransient<IResultRepository, ResultRepository>();
 
             services.AddHostedService<QueuedHostedService>();
             services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
@@ -92,19 +96,23 @@ namespace VeloTiming
                 }
             });
 
-            System.Threading.Tasks.Task task = MainService.Init(app.ApplicationServices);
-            serviceProvider = app.ApplicationServices;
+            // Init Singleton services
+            app.ApplicationServices.GetService<IMainService>();
+            app.ApplicationServices.GetService<IRfidListener>();
+
             // listen to websocket to /rfid
             // app.UseWebSockets().ListenRfidWebScoket();
-
-            // listen to rfid  on tcp
-            RfidListener.ListenTCP();
         }
 
         private static IServiceProvider serviceProvider;
         internal static T GetRequiredService<T>()
         {
             return serviceProvider.GetRequiredService<T>();
+        }
+
+        internal static void SetServiceProvider(IServiceProvider serviceProvider)
+        {
+            Startup.serviceProvider = serviceProvider;
         }
     }
 }
