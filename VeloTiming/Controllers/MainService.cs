@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
@@ -10,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using VeloTiming.Data;
 using VeloTiming.Hubs;
 
-namespace VeloTiming
+namespace VeloTiming.Controllers
 {
 
     public interface IMainService
@@ -27,11 +26,12 @@ namespace VeloTiming
 
     public class MainService : IMainService
     {
-        private static RaceInfo Race;
-        private readonly static List<Mark> Results = new List<Mark>();
+        private RaceInfo Race;
+        private readonly List<Mark> Results = new List<Mark>();
         private readonly IServiceProvider serviceProvider;
         private readonly IHubContext<ResultHub, IResultHub> hub;
         private readonly IBackgroundTaskQueue taskQueue;
+        private readonly ITimeService timeService;
 
         public MainService(IServiceProvider serviceProvider)
         //, , IResultHub> hub, IBackgroundTaskQueue taskQueue)
@@ -39,6 +39,7 @@ namespace VeloTiming
             this.serviceProvider = serviceProvider;
             this.hub = serviceProvider.GetService<IHubContext<ResultHub, IResultHub>>();
             this.taskQueue = serviceProvider.GetService<IBackgroundTaskQueue>();
+            this.timeService = serviceProvider.GetService<ITimeService>();
             Init().Wait();
         }
 
@@ -154,7 +155,7 @@ namespace VeloTiming
         const int MARKS_MERGE_SECONDS = 30;
         private Task ProcessAddMark(DateTime? time, string number, string source, System.Threading.CancellationToken token)
         {
-            DateTime markTime = time ?? DateTime.Now;
+            DateTime markTime = time ?? timeService.Now;
             Task task = null;
             lock (Results)
             {
@@ -172,7 +173,7 @@ namespace VeloTiming
                     result = nearbyResults.FirstOrDefault(r => !r.Time.HasValue);
                     if (result == null)
                     {
-                        Results.Add(result = new Mark()); // add new time withough
+                        Results.Add(result = new Mark(timeService)); // add new time withough
                         added = true;
                     }
                     result.Time = time;
@@ -185,7 +186,7 @@ namespace VeloTiming
                     result = nearbyResults.FirstOrDefault(r => string.IsNullOrWhiteSpace(r.Number));
                     if (result == null)
                     {
-                        Results.Add(result = new Mark());
+                        Results.Add(result = new Mark(timeService));
                         reorder = added = true;
                     }
                     result.Number = number;
@@ -197,7 +198,7 @@ namespace VeloTiming
                     result = nearbyResults.FirstOrDefault(r => r.Number == number);
                     if (result == null)
                     {
-                        Results.Add(result = new Mark { Number = number, NumberSource = source });
+                        Results.Add(result = new Mark(timeService) { Number = number, NumberSource = source });
                         reorder = added = true;
                     }
                     // TODO: update time based on source priority
@@ -213,7 +214,7 @@ namespace VeloTiming
                         result.Name = rider;
                     result.Data.Add(new MarkData
                     {
-                        CreatedOn = DateTime.Now,
+                        CreatedOn = timeService.Now,
                         Number = number,
                         Source = source,
                         Time = time

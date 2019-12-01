@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
+using VeloTiming.Controllers;
 using VeloTiming.Hubs;
 using VeloTiming.Services;
 

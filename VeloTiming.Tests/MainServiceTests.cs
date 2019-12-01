@@ -7,12 +7,15 @@ using System;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using VeloTiming.Data;
+using VeloTiming.Controllers;
 
 namespace VeloTiming.Tests
 {
     public class MainServiceTests
     {
         MainService sut;
+        DateTime fakeNow = DateTime.Now;
+        private readonly Mock<IServiceProvider> serviceProvider;
 
         public MainServiceTests()
         {
@@ -31,7 +34,7 @@ namespace VeloTiming.Tests
             iHubContextMock.Setup(h => h.Clients).Returns(() => mockClients.Object);
 
             // mock IServiceProvider
-            var serviceProvider = new Mock<IServiceProvider>();
+            serviceProvider = new Mock<IServiceProvider>();
 
             var serviceScope = new Mock<IServiceScope>();
             serviceScope.Setup(x => x.ServiceProvider).Returns(serviceProvider.Object);
@@ -53,6 +56,14 @@ namespace VeloTiming.Tests
                 .Setup(x => x.GetService(typeof(IResultRepository)))
                 .Returns(new Mock<IResultRepository>().Object);
 
+            // mock timeService
+            var timeServiceMock = new Mock<ITimeService>();
+            timeServiceMock.Setup(t => t.Now).Returns(() => fakeNow);
+            serviceProvider.Setup(x => x.GetService(typeof(ITimeService))).Returns(timeServiceMock.Object);
+        }
+
+        private void CreateSut()
+        {
             // create System under test
             sut = new MainService(serviceProvider.Object);
 
@@ -67,13 +78,16 @@ namespace VeloTiming.Tests
                 IsActive = true,
                 RealStart = new DateTime(2019, 1, 1, 1, 0, 0, 0)
             }, new System.Collections.Generic.Dictionary<string, string> {
-                { "1", "Пупкин Вася"}
+                { "1", "Пупкин Вася"},
+                { "2", "Иванов Петя"},
+                { "3", "Сюткин Павел"}
             }).Wait();
         }
 
         [Fact]
         public void AddNumberAndTime_CalculatePlaceAndLaps_Pass()
         {
+            CreateSut();
             DateTime start = new System.DateTime(2019, 1, 1, 1, 1, 1);
 
             sut.AddNumberAndTime("1", start.AddSeconds(100), "rfid");
@@ -102,8 +116,10 @@ namespace VeloTiming.Tests
         [Fact]
         public void Test2()
         {
+            CreateSut();
             const string s = "source";
             DateTime start = DateTime.Now.AddSeconds(-1000);
+            fakeNow = start.AddSeconds(99);
             sut.AddNumber("1", s);
             AssertResult("1", 1, 1);
             sut.AddNumber("2", s);
@@ -115,9 +131,11 @@ namespace VeloTiming.Tests
             sut.AddTime(start.AddSeconds(113), s);
             AssertResult("3", 3, 1);
             sut.AddTime(start.AddSeconds(203), s);
-            AssertResult("", -1, -1);
+            AssertResult(null, -1, -1);
+            fakeNow = start.AddSeconds(205);
             sut.AddNumber("3", s);
             AssertResult("3", 1, 2);
+            fakeNow = start.AddSeconds(206);
             sut.AddNumber("2", s);
             sut.AddTime(start.AddSeconds(206), s);
             AssertResult("2", 2, 2);
