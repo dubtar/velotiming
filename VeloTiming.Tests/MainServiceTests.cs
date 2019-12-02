@@ -114,7 +114,7 @@ namespace VeloTiming.Tests
         }
 
         [Fact]
-        public void Test2()
+        public void AddNumberAddTime_Pass()
         {
             CreateSut();
             const string s = "source";
@@ -141,12 +141,43 @@ namespace VeloTiming.Tests
             AssertResult("2", 2, 2);
         }
 
-        private void AssertResult(string number, int place, int lap)
+        [Fact]
+        public void AddTimeAddNumber_Pass()
         {
-            var result = sut.GetMarks().Last();
+            CreateSut();
+            const string s = "source";
+            DateTime start = DateTime.Now.AddSeconds(-1000);
+            fakeNow = start.AddSeconds(99);
+            sut.AddTime(start.AddSeconds(98), s);
+            AssertResult(null, -1, -1);
+            sut.AddTime(start.AddSeconds(99), s);
+            AssertResult(null, -1, -1);
+            sut.AddTime(start.AddSeconds(100), s);
+            AssertResult(null, -1, -1);
+            var results = sut.GetMarks().ToArray();
+            Assert.Equal(3, results.Length);
+
+            fakeNow = start.AddSeconds(103);
+            sut.AddNumber("1", s);
+            AssertResult(null, -1, -1);
+            AssertResult(sut.GetMarks().First(), "1", 1, 1);
+
+            fakeNow = start.AddSeconds(105);
+            sut.AddNumber("2", s);
+            AssertResult(null, -1, -1);
+            AssertResult(sut.GetMarks().Skip(1).First(), "2", 2, 1);
+        }
+
+        private void AssertResult(Mark result, string number, int place, int lap)
+        {
             Assert.Equal(number, result.Number);
             Assert.Equal(place, result.Place);
             Assert.Equal(lap, result.Lap);
+        }
+        private void AssertResult(string number, int place, int lap)
+        {
+            var result = sut.GetMarks().Last();
+            AssertResult(result, number, place, lap);
         }
     }
 }
