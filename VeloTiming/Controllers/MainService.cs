@@ -131,7 +131,7 @@ namespace VeloTiming.Controllers
                 Race.Start = date;
                 lock (Results)
                     Results.Clear();
-                Task task = SendRaceStarted();
+                _ = SendRaceStarted();
             }
         }
         #region send signalr messages to clients
@@ -225,7 +225,7 @@ namespace VeloTiming.Controllers
                     if (reorder)
                         Results.Sort(delegate (Mark a, Mark b)
                         {
-                            return (a.Time ?? a.CreatedOn).CompareTo(b.Time ?? b.CreatedOn);
+                            return (a.Time ?? a.CreatedOn.AddSeconds(MARKS_MERGE_SECONDS)).CompareTo(b.Time ?? b.CreatedOn.AddSeconds(MARKS_MERGE_SECONDS));
                         });
                     ProcessPlace(result);
 

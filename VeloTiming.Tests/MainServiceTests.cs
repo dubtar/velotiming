@@ -126,10 +126,15 @@ namespace VeloTiming.Tests
             AssertResult("2", 2, 1);
             sut.AddNumber("3", s);
             AssertResult("3", 3, 1);
+            checkPlaces();
+
             sut.AddTime(start.AddSeconds(100), s);
+            checkPlaces();
             sut.AddTime(start.AddSeconds(110), s);
+            checkPlaces();
             sut.AddTime(start.AddSeconds(113), s);
             AssertResult("3", 3, 1);
+            checkPlaces();
             sut.AddTime(start.AddSeconds(203), s);
             AssertResult(null, -1, -1);
             fakeNow = start.AddSeconds(205);
@@ -139,6 +144,74 @@ namespace VeloTiming.Tests
             sut.AddNumber("2", s);
             sut.AddTime(start.AddSeconds(206), s);
             AssertResult("2", 2, 2);
+        }
+        private void checkPlaces()
+        {
+
+            int index = 1;
+            foreach (var mark in sut.GetMarks())
+            {
+                Assert.Equal(index, mark.Place);
+                index++;
+            };
+        }
+
+        [Fact]
+        public void AddNumbersAndTimes2_Pass()
+        {
+            CreateSut();
+            const string s = "source";
+            DateTime start = DateTime.Now.AddSeconds(-1000);
+            fakeNow = start.AddSeconds(3);
+            sut.AddTime(fakeNow.AddSeconds(-1), s);
+            fakeNow = fakeNow.AddSeconds(1);
+            sut.AddTime(fakeNow.AddMilliseconds(-500), s);
+            fakeNow = fakeNow.AddSeconds(1);
+            sut.AddNumber("2", s);
+            fakeNow = fakeNow.AddSeconds(1);
+            sut.AddNumber("3", s);
+            AssertResult("3", 2, 1);
+
+            fakeNow = fakeNow.AddSeconds(5);
+            sut.AddNumber("15", s);
+            fakeNow = fakeNow.AddSeconds(1);
+            sut.AddTime(fakeNow.AddSeconds(-2), s);
+            AssertResult("15", 3, 1);
+
+
+            fakeNow = fakeNow.AddSeconds(5);
+            sut.AddNumber("1", s);
+            fakeNow = fakeNow.AddSeconds(1);
+            sut.AddTime(fakeNow.AddSeconds(-2), s);
+            AssertResult("1", 4, 1);
+
+
+            // Lap 2
+            fakeNow = fakeNow.AddSeconds(65);
+            sut.AddNumber("3", s);
+            fakeNow = fakeNow.AddSeconds(1);
+            sut.AddTime(fakeNow.AddSeconds(-2), s);
+            AssertResult("3", 1, 2);
+
+            fakeNow = fakeNow.AddSeconds(3);
+            sut.AddNumber("2", s);
+            fakeNow = fakeNow.AddSeconds(1);
+            sut.AddTime(fakeNow.AddSeconds(-2), s);
+            AssertResult("2", 2, 2);
+
+
+            fakeNow = fakeNow.AddSeconds(30);
+            sut.AddNumber("1", s);
+            fakeNow = fakeNow.AddSeconds(1);
+            sut.AddTime(fakeNow.AddSeconds(-2), s);
+            AssertResult("1", 3, 2);
+
+            // Lap 3
+            fakeNow = fakeNow.AddSeconds(65);
+            sut.AddNumber("3", s);
+            fakeNow = fakeNow.AddSeconds(1);
+            sut.AddTime(fakeNow.AddSeconds(-2), s);
+            AssertResult("3", 1, 3);
         }
 
         [Fact]

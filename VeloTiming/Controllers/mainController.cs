@@ -30,6 +30,7 @@ namespace VeloTiming.Controllers
             if (start == null) return BadRequest($"Start not found by Id '{startId}");
             if (start.RealStart == null) {
                 start.RealStart = DateTime.Now;
+                await dataContext.SaveChangesAsync();
                 mainService.StartRun(start.RealStart.Value);
             }
             return Ok(startId);
