@@ -2,8 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
+using System.Text.Json.Serialization;
 
 namespace VeloTiming.Data
 {
@@ -24,7 +23,7 @@ namespace VeloTiming.Data
         public virtual ICollection<RaceNumber> RaceNumbers { get; set; }
     }
 
-    [JsonConverter(typeof(StringEnumConverter))]
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum RaceType
     {
         [Description("Групповая кругами")]

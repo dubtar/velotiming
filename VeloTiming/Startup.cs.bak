@@ -45,9 +45,7 @@ namespace VeloTiming
 
             services.AddHostedService<QueuedHostedService>();
             services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
-			
-			services.AddControllers();
-			
+
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
             {
@@ -73,14 +71,17 @@ namespace VeloTiming
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
 
-			app.UseRouting();
-            app.UseEndpoints(endpoints =>
+            app.UseSignalR(routes =>
             {
-                endpoints.MapControllerRoute(
+                routes.MapHub<ResultHub>("/resultHub");
+                routes.MapHub<RfidHub>("/rfidHub");
+            });
+
+            app.UseRouting(routes =>
+            {
+                routes.MapRoute(
                     name: "default",
-                    pattern: "{controller}/{action=Index}/{id?}");
-                endpoints.MapHub<ResultHub>("/resultHub");
-                endpoints.MapHub<RfidHub>("/rfidHub");
+                    template: "{controller}/{action=Index}/{id?}");
             });
 
             app.UseSpa(spa =>

@@ -5,13 +5,12 @@ using System.Net;
 using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
 using VeloTiming.Controllers;
 using VeloTiming.Hubs;
 using VeloTiming.Services;
@@ -129,7 +128,7 @@ namespace VeloTiming
                             if (start >= 0)
                             {
                                 message = message.Substring(start);
-                                var data = JsonConvert.DeserializeObject<RfidData>(message);
+                                var data = JsonSerializer.Deserialize<RfidData>(message);
                                 if (data != null && !string.IsNullOrEmpty(data.RFIDStamp))
                                 {
                                     // parse times
@@ -211,7 +210,7 @@ namespace VeloTiming
                 try
                 {
                     var str = Encoding.ASCII.GetString(buffer, 0, result.Count);
-                    var data = JsonConvert.DeserializeObject<RfidData>(str);
+                    var data = JsonSerializer.Deserialize<RfidData>(str);
                     if (data != null && !String.IsNullOrEmpty(data.RFIDStamp))
                     {
                         var hubContext = context.RequestServices.GetRequiredService<IHubContext<RfidHub>>();

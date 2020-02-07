@@ -29,5 +29,23 @@ namespace VeloTiming.Data
         public string Number { get; set; }
         public string Source { get; set; }
         public DateTime CreatedOn { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            if (obj != null && obj is MarkData b)
+            {
+                return Time == b.Time && Number == b.Number && Source == b.Source && b.CreatedOn == CreatedOn;
+            }
+            return false;
+        }
+        public override int GetHashCode()
+        {
+            return (Time, Number, Source, CreatedOn).GetHashCode();
+        }
+
+        internal MarkData Copy()
+        {
+            return new MarkData { Time = Time, Number = Number, Source = Source, CreatedOn = CreatedOn };
+        }
     }
 }

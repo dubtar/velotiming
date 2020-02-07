@@ -1,6 +1,9 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace VeloTiming.Data
 {
@@ -24,8 +27,12 @@ namespace VeloTiming.Data
                 .HasOne(sc => sc.Start)
                 .WithMany(s => s.Categories).IsRequired();
             modelBuilder.Entity<Mark>().Property(m => m.Data).HasConversion(
-                v => JsonConvert.SerializeObject(v, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }),
-                v => JsonConvert.DeserializeObject<IList<MarkData>>(v, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore })
+                v => JsonSerializer.Serialize(v, new JsonSerializerOptions { IgnoreNullValues  = true }),
+                v => JsonSerializer.Deserialize<IList<MarkData>>(v, new JsonSerializerOptions { IgnoreNullValues = true })
+            ).Metadata.SetValueComparer(new ValueComparer<IList<MarkData>>(
+                (c1, c2) => c1.SequenceEqual(c2),
+                c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                c => (IList<MarkData>)(c.Select(a => a.Copy()).ToList()))
             );
         }
     }
