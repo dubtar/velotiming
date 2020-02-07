@@ -40,7 +40,7 @@ namespace VeloTiming.Controllers
             this.hub = serviceProvider.GetService<IHubContext<ResultHub, IResultHub>>();
             this.taskQueue = serviceProvider.GetService<IBackgroundTaskQueue>();
             this.timeService = serviceProvider.GetService<ITimeService>();
-            Init().Wait();
+            _ = Init();
         }
 
         public RaceInfo GetRaceInfo()
@@ -173,7 +173,7 @@ namespace VeloTiming.Controllers
                     result = nearbyResults.FirstOrDefault(r => !r.Time.HasValue);
                     if (result == null)
                     {
-                        Results.Add(result = new Mark(timeService)); // add new time withough
+                        Results.Add(result = Mark.Create(timeService)); // add new time withough
                         added = true;
                     }
                     result.Time = time;
@@ -186,7 +186,7 @@ namespace VeloTiming.Controllers
                     result = nearbyResults.FirstOrDefault(r => string.IsNullOrWhiteSpace(r.Number));
                     if (result == null)
                     {
-                        Results.Add(result = new Mark(timeService));
+                        Results.Add(result = Mark.Create(timeService));
                         reorder = added = true;
                     }
                     result.Number = number;
@@ -198,7 +198,10 @@ namespace VeloTiming.Controllers
                     result = nearbyResults.FirstOrDefault(r => r.Number == number);
                     if (result == null)
                     {
-                        Results.Add(result = new Mark(timeService) { Number = number, NumberSource = source });
+                        result = Mark.Create(timeService);
+                        result.Number = number;
+                        result.NumberSource = source;
+                        Results.Add(result);
                         reorder = added = true;
                     }
                     // TODO: update time based on source priority

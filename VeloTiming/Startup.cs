@@ -42,6 +42,7 @@ namespace VeloTiming
             services.AddSingleton<IRfidListener, RfidListener>();
 
             services.AddTransient<INumberService, NumberService>();
+            services.AddTransient<ITimeService, TimeService>();
             services.AddTransient<IResultRepository, ResultRepository>();
 
             services.AddHostedService<QueuedHostedService>();

@@ -6,10 +6,6 @@ namespace VeloTiming.Data
 {
     public class Mark
     {
-        public Mark(ITimeService timeService)
-        {
-            CreatedOn = timeService.Now;
-        }
         public string Id { get; set; } = Guid.NewGuid().ToString();
         public DateTime? Time { get; set; }
         public string TimeSource { get; set; }
@@ -19,10 +15,15 @@ namespace VeloTiming.Data
         public bool IsIgnored { get; set; }
         public IList<MarkData> Data { get; set; } = new List<MarkData>();
         public DateTime CreatedOn { get; private set; }
-        public int Lap {get; set;}
-        public int Place { get; set;}
+        public int Lap { get; set; }
+        public int Place { get; set; }
+
+        internal static Mark Create(ITimeService timeService)
+        {
+            return new Mark { CreatedOn = timeService.Now };
+        }
     }
-    public class MarkData 
+    public class MarkData
     {
         public DateTime? Time { get; set; }
         public string Number { get; set; }
