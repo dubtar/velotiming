@@ -56,7 +56,9 @@ export default class StartsList extends React.Component<Props, typeof InitialSta
                                         <td>{start.categories && start.categories.map(c => c.name).join(', ')}</td>
                                         <td>
                                             <ButtonGroup>
-                                                <Button variant="success" onClick={this.start.bind(this, start.id)}>Начать</Button>
+                                                {start.realStart == null &&
+                                                    <Button variant="success" onClick={this.start.bind(this, start.id)}>Начать</Button>
+                                                }
                                                 <Button variant="outline-primary" onClick={this.editStart.bind(this, start)}>Изменить</Button>
                                                 <Button variant="outline-danger" onClick={this.deleteStart.bind(this, start.id)}>Удалить</Button>
                                             </ButtonGroup>
