@@ -15,17 +15,17 @@ const schema = yupObject({
     name: yupString().required('Как-нибудь хоть назови'),
     plannedStart: yupString().nullable()
 })
-interface categoryValues { [key: number]: boolean }
-type formValues = Start & { categoryChecks: categoryValues }
+interface CategoryValues { [key: number]: boolean }
+type FormValues = Start & { categoryChecks: CategoryValues }
 
 const EditStart: React.SFC<Props> = (props) => {
-    function onSubmit(values: formValues) {
-        var cats: RaceCategory[] = []
-        for (var key in values.categoryChecks) {
+    function onSubmit(values: FormValues) {
+        const cats: RaceCategory[] = []
+        for (const key in values.categoryChecks) {
             const id = parseInt(key)
             const category = props.categories.find(c => c.id === id)
             if (values.categoryChecks[key] && category) {
-                cats.push({ id: id, name: category.name, code: category.code })
+                cats.push({ id, name: category.name, code: category.code })
                 console.log(`${key}: ${values.categoryChecks[key]} (${category.code})`)
             }
         }
@@ -34,12 +34,16 @@ const EditStart: React.SFC<Props> = (props) => {
         props.onSubmit(result)
     }
 
-    var catProps = {} as categoryValues
-    props.categories.forEach(cat => { catProps[cat.id] = props.start.categories.find(sc => sc.id === cat.id) != undefined })
-    var formValues: formValues = { ...props.start, categoryChecks: catProps }
+    const catProps = {} as CategoryValues
+    props.categories.forEach(cat => { catProps[cat.id] = props.start.categories.find(sc => sc.id === cat.id) !== undefined })
+    const formValues: FormValues = { ...props.start, categoryChecks: catProps }
+
+    function onReset() {
+        props.onSubmit(undefined);
+    }
 
     return (
-        <Formik validationSchema={schema} onSubmit={onSubmit} initialValues={formValues} onReset={() => props.onSubmit(undefined)}>
+        <Formik validationSchema={schema} onSubmit={onSubmit} initialValues={formValues} onReset={onReset}>
             {({ handleSubmit, handleChange, handleReset, values, touched, errors }) => (
                 <Form noValidate onSubmit={handleSubmit} onReset={handleReset} className="bg-light p-3">
                     <Form.Row>

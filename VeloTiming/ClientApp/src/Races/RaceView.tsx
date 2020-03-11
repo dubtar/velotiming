@@ -17,7 +17,7 @@ type Props = RouteComponentProps<{ id: string }>
 export default class RaceView extends React.Component<Props, typeof InitialState> {
     constructor(props: Props) {
         super(props)
-        this.state = { ...InitialState, raceId: parseInt(props.match.params.id) }
+        this.state = { ...InitialState, raceId: parseInt(props.match.params.id, 10) }
     }
 
     async componentDidMount() {
@@ -32,7 +32,7 @@ export default class RaceView extends React.Component<Props, typeof InitialState
 
     render() {
         if (this.state.error) return <Alert variant="danger">{this.state.error}</Alert>
-        if (!this.state.race) return <Spinner animation="grow"></Spinner>
+        if (!this.state.race) return <Spinner animation="grow"/>
         return (
             <Row><Col>
                 <h1>{this.state.race.name} <small>{new Date(this.state.race.date).toLocaleDateString('ru')}</small></h1>
@@ -45,7 +45,7 @@ export default class RaceView extends React.Component<Props, typeof InitialState
                         <RidersList raceId={this.state.raceId} />
                     </Tab>
                     <Tab eventKey="starts" title="Заезды">
-                        <StartsList raceId={this.state.raceId} />
+                        <StartsList raceId={this.state.raceId} raceDate={this.state.race.date} />
                     </Tab>
                 </Tabs>
             </Col></Row>

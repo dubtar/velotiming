@@ -3,7 +3,8 @@ import RaceService, { Start, RaceCategory } from "./RaceService";
 import { Table, Row, Col, Alert, Spinner, Button, ButtonGroup } from "react-bootstrap";
 import EditStart from "./EditStart";
 import { Redirect } from "react-router";
-import Svc from '../svc'
+import Svc from '../svc';
+import moment from 'moment';
 
 const InitialState = {
     starts: null as Start[] | null,
@@ -13,7 +14,7 @@ const InitialState = {
     startRaceId: null as number | null
 }
 
-type Props = { raceId: number }
+type Props = { raceId: number, raceDate: string }
 
 export default class StartsList extends React.Component<Props, typeof InitialState> {
 
@@ -118,10 +119,22 @@ export default class StartsList extends React.Component<Props, typeof InitialSta
     private async saveStart(start?: Start) {
         try {
             if (start) {
-                const starts = start.id ?  // edit exiting
-                    await RaceService.UpdateStart(start) :
+                let starts;
+                if (start.id) {// edit exiting
+                    starts = await RaceService.UpdateStart(start);
+                } else {
                     // add new
-                    await RaceService.AddStart(this.props.raceId, start)
+                    let plannedStart: string | null = null;
+                    if (start.plannedStart) {
+                        const nums = start.plannedStart.split(':');
+                        if (nums.length === 2) {
+                            const hours = parseInt(nums[0], 10);
+                            const minutes = parseInt(nums[1], 10);
+                            plannedStart = moment(this.props.raceDate).hours(hours).minutes(minutes).seconds(0).toJSON();
+                        }
+                    }
+                    starts = await RaceService.AddStart(this.props.raceId, {...start, plannedStart })
+                }
                 this.setState({ starts })
             }
         } catch (ex) {
