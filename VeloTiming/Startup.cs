@@ -47,6 +47,9 @@ namespace VeloTiming
             services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
 			
 			services.AddControllers();
+
+            // Register the Swagger services
+            services.AddSwaggerDocument();
 			
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
@@ -61,6 +64,8 @@ namespace VeloTiming
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseOpenApi();
+                app.UseSwaggerUi3();
             }
             else
             {

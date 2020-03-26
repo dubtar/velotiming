@@ -22,11 +22,13 @@ const EditStart: React.SFC<Props> = (props) => {
     function onSubmit(values: FormValues) {
         const cats: RaceCategory[] = []
         for (const key in values.categoryChecks) {
-            const id = parseInt(key)
-            const category = props.categories.find(c => c.id === id)
-            if (values.categoryChecks[key] && category) {
-                cats.push({ id, name: category.name, code: category.code })
-                console.log(`${key}: ${values.categoryChecks[key]} (${category.code})`)
+            if (values.categoryChecks.hasOwnProperty(key)) {
+                const id = parseInt(key, 10)
+                const category = props.categories.find(c => c.id === id)
+                if (values.categoryChecks[key] && category) {
+                    cats.push({ id, name: category.name, code: category.code })
+                    // console.log(`${key}: ${values.categoryChecks[key]} (${category.code})`)
+                }
             }
         }
         const result = { ...values, categories: cats }

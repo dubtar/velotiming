@@ -20,17 +20,17 @@ export default class RaceView extends React.Component<Props, typeof InitialState
         this.state = { ...InitialState, raceId: parseInt(props.match.params.id, 10) }
     }
 
-    async componentDidMount() {
+    public async componentDidMount() {
         try {
             const race = await RaceService.GetRace(this.state.raceId)
-            this.setState({ race: race })
+            this.setState({ race })
         }
         catch (ex) {
             this.setState({ error: ex.toString() })
         }
     }
 
-    render() {
+    public render() {
         if (this.state.error) return <Alert variant="danger">{this.state.error}</Alert>
         if (!this.state.race) return <Spinner animation="grow"/>
         return (
