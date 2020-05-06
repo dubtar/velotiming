@@ -55,7 +55,7 @@ export default class NumberList extends React.Component<
   }
 
   public async deleteNumber(num: string) {
-    if (confirm("Удалить номер?")) {
+    if (window.confirm("Удалить номер?")) {
       try {
         const numbers = await NumberService.DeleteNumber(num);
         this.setState({ numbers });

@@ -1,21 +1,19 @@
 import React from "react";
-import RaceService, { Start, RaceCategory } from "./RaceService";
 import { Table, Row, Col, Alert, Spinner, Button, ButtonGroup } from "react-bootstrap";
 import EditStart from "./EditStart";
 import { Redirect } from "react-router";
-import Svc from '../svc';
 import moment from 'moment';
-import { RacesClient } from '../clients'
+import { MainClient, StartClient, StartDto, RaceCategoryDto, RacesClient, RaceCategoryClient } from '../clients'
 
 const InitialState = {
-    starts: null as Start[] | null,
-    categories: null as RaceCategory[] | null,
-    editStart: null as Start | null,
+    starts: null as StartDto[] | null,
+    categories: null as RaceCategoryDto[] | null,
+    editStart: null as StartDto | null,
     error: null as string | null,
     startRaceId: null as number | null
 }
 
-type Props = { raceId: number, raceDate: string }
+type Props = { raceId: number, raceDate: Date }
 
 export default class StartsList extends React.Component<Props, typeof InitialState> {
 
@@ -28,7 +26,7 @@ export default class StartsList extends React.Component<Props, typeof InitialSta
 
     public async componentDidMount() {
         try {
-            const starts = await RaceService.GetStarts(this.props.raceId)
+            const starts = await new StartClient().get(this.props.raceId)
             this.setState({ starts })
         } catch (ex) {
             this.setState({ error: ex.toString() })
@@ -79,16 +77,16 @@ export default class StartsList extends React.Component<Props, typeof InitialSta
     }
 
     private addStart() {
-        RaceService.GetRaceCategories(this.props.raceId).then(categories => {
+        new RaceCategoryClient().get(this.props.raceId).then(categories => {
             this.setState({
                 categories,
-                editStart: { id: 0, name: '', plannedStart: null, realStart: null, end: null, categories: [] }
+                editStart: new StartDto()
             })
         }, error => { this.setState({ error }) });
     }
 
-    private editStart(editStart: Start) {
-        RaceService.GetRaceCategories(this.props.raceId).then(categories => {
+    private editStart(editStart: StartDto) {
+        new RaceCategoryClient().get(this.props.raceId).then(categories => {
             this.setState({
                 categories, editStart
             })
@@ -96,9 +94,9 @@ export default class StartsList extends React.Component<Props, typeof InitialSta
     }
 
     private async deleteStart(startId: number) {
-        if (confirm('Удалить участника?')) {
+        if (window.confirm('Удалить участника?')) {
             try {
-                const starts = await RaceService.DeleteStart(startId);
+                const starts = await new StartClient().delete(startId);
                 this.setState({ starts })
 
             } catch (ex) {
@@ -109,7 +107,7 @@ export default class StartsList extends React.Component<Props, typeof InitialSta
 
     private async start(startId: number) {
         try {
-            await Svc.SetActiveStart(startId)
+            await new MainClient().setActiveStart(startId)
             this.setState({ startRaceId: startId });
         }
         catch (ex) {
@@ -117,32 +115,26 @@ export default class StartsList extends React.Component<Props, typeof InitialSta
         }
     }
 
-    private async saveStart(start?: Start) {
+    private async saveStart(start?: StartDto) {
         try {
             if (start) {
                 let starts;
+                // this.updatePlannedStartTime(start);
                 if (start.id) {// edit exiting
-                    starts = await RaceService.UpdateStart(start);
+                    starts = await new StartClient().update(start);
                 } else {
                     // add new
-                    let plannedStart: string | null = null;
-                    if (start.plannedStart) {
-                        const nums = start.plannedStart.split(':');
-                        if (nums.length === 2) {
-                            const hours = parseInt(nums[0], 10);
-                            const minutes = parseInt(nums[1], 10);
-                            plannedStart = moment(this.props.raceDate).hours(hours).minutes(minutes).seconds(0).toJSON();
-                        }
-                    }
-                    starts = await RaceService.AddStart(this.props.raceId, {...start, plannedStart })
+                    starts = await new StartClient().add(this.props.raceId, start);
                 }
                 this.setState({ starts })
             }
         } catch (ex) {
             this.setState({ error: ex.toString() })
         }
-        // close editor
-        this.setState({ editStart: null })
+        finally {
+            // close editor
+            this.setState({ editStart: null })
+        }
     }
 
 }

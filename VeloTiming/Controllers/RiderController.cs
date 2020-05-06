@@ -20,17 +20,17 @@ namespace VeloTiming.Controllers
 
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int id)
+        public async Task<ActionResult<RiderDto[]>> Get(int id)
         {
             var categories = await dataContext.Riders.Where(rc => rc.RaceId == id).Include(r => r.Category)
             .OrderBy(r => r.Category.Code).ThenBy(r => r.LastName).ThenBy(r => r.FirstName)
             .ToArrayAsync();
             if (categories == null) return NotFound();
-            return Ok(categories.Select(c => new RiderModel(c)));
+            return Ok(categories.Select(c => new RiderDto(c)));
         }
 
         [HttpPost("{id}")]
-        public async Task<IActionResult> Add(int id, [FromBody] RiderModel rider)
+        public async Task<ActionResult<RiderDto[]>> Add(int id, [FromBody] RiderDto rider)
         {
             if (rider == null) return BadRequest("Category not posted");
             var race = await dataContext.Races.FindAsync(id);
@@ -45,7 +45,7 @@ namespace VeloTiming.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> Update([FromBody] RiderModel category)
+        public async Task<ActionResult<RiderDto[]>> Update([FromBody] RiderDto category)
         {
             if (category == null) return BadRequest("Category not set");
             var entity = await dataContext.Riders.FindAsync(category.Id);
@@ -57,7 +57,7 @@ namespace VeloTiming.Controllers
             return await Get(raceId);
         }
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<ActionResult<RiderDto[]>> Delete(int id)
         {
             var entity = await dataContext.Riders.FindAsync(id);
             if (entity == null) return NotFound();
@@ -68,10 +68,10 @@ namespace VeloTiming.Controllers
         }
     }
 
-    public class RiderModel
+    public class RiderDto
     {
-        public RiderModel() { }
-        public RiderModel(Rider rider)
+        public RiderDto() { }
+        public RiderDto(Rider rider)
         {
             this.Id = rider.Id;
             this.Number = rider.NumberId;

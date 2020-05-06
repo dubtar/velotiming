@@ -20,7 +20,7 @@ export default class CategoryList extends React.Component<Props, typeof InitialS
         this.saveCategory = this.saveCategory.bind(this)
     }
 
-    async componentDidMount() {
+    public async componentDidMount() {
         try {
             const categories = await RaceService.GetRaceCategories(this.props.raceId)
             this.setState({ categories, error: undefined })
@@ -29,45 +29,8 @@ export default class CategoryList extends React.Component<Props, typeof InitialS
         }
     }
 
-    addCategory() {
-        this.setState({ editCategory: { id: 0, name: '', code: '' } })
-    }
 
-    editCategory(category: RaceCategory) {
-        this.setState({ editCategory: category });
-    }
-
-    async deleteCategory(categoryId: number) {
-        if (confirm('Удалить категорию?'))
-            try {
-                const categories = await RaceService.DeleteCategory(categoryId);
-                this.setState({ categories, error: undefined })
-
-            } catch (ex) {
-                this.setState({ error: ex.toString() })
-            }
-    }
-
-    async saveCategory(category?: RaceCategory) {
-        try {
-            if (category) {
-                if (category.id) { // edit exiting
-                    await RaceService.UpdateCategory(category);
-
-                } else { // add new
-                    await RaceService.AddCategory(this.props.raceId, category)
-                }
-                const categories = await RaceService.GetRaceCategories(this.props.raceId)
-                this.setState({ categories, error: undefined })
-            }
-        } catch (ex) {
-            this.setState({ error: ex.toString() })
-        }
-        // close editor
-        this.setState({ editCategory: null })
-    }
-
-    render() {
+    public render() {
         return (
             <>
                 {!this.state.categories && <Spinner animation="grow" />}
@@ -77,7 +40,7 @@ export default class CategoryList extends React.Component<Props, typeof InitialS
                         <th>Название</th>
                         <th>Пол</th>
                         <th>Годы</th>
-                        <th></th>
+                        <th/>
                     </tr></thead>
                     <tbody>
                         {this.state.categories.map(cat => (
@@ -103,5 +66,44 @@ export default class CategoryList extends React.Component<Props, typeof InitialS
                 {this.state.error && <Alert variant="danger">{this.state.error}</Alert>}
             </>
         )
+    }
+
+    private addCategory() {
+        this.setState({ editCategory: { id: 0, name: '', code: '' } })
+    }
+
+    private editCategory(category: RaceCategory) {
+        this.setState({ editCategory: category });
+    }
+
+    private async deleteCategory(categoryId: number) {
+        if (window.confirm('Удалить категорию?')) {
+            try {
+                const categories = await RaceService.DeleteCategory(categoryId);
+                this.setState({ categories, error: undefined })
+
+            } catch (ex) {
+                this.setState({ error: ex.toString() })
+            }
+        }
+    }
+
+    private async saveCategory(category?: RaceCategory): Promise<void> {
+        try {
+            if (category) {
+                if (category.id) { // edit exiting
+                    await RaceService.UpdateCategory(category);
+
+                } else { // add new
+                    await RaceService.AddCategory(this.props.raceId, category)
+                }
+                const categories = await RaceService.GetRaceCategories(this.props.raceId)
+                this.setState({ categories, error: undefined })
+            }
+        } catch (ex) {
+            this.setState({ error: ex.toString() })
+        }
+        // close editor
+        this.setState({ editCategory: null })
     }
 }

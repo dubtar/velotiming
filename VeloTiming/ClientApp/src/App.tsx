@@ -69,7 +69,7 @@ class App extends Component<{}, typeof InitialState> {
     );
   }
   private deactivate() {
-    if (confirm('Остановить текущий заезд?')) Svc.DeactivateStart();
+    if (window.confirm('Остановить текущий заезд?')) Svc.DeactivateStart();
   }
 }
 const redirectToRaces = () => <Redirect to="/races" />;

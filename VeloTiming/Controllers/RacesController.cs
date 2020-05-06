@@ -17,20 +17,20 @@ namespace VeloTiming.Controllers
             this.dataContext = dataContext;
         }
         [HttpGet]
-        public IEnumerable<RaceModel> GetRaces()
+        public IEnumerable<RaceDto> GetRaces()
         {
-            return dataContext.Races.AsEnumerable().Select(r => new RaceModel(r));
+            return dataContext.Races.AsEnumerable().Select(r => new RaceDto(r));
         }
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int id)
+        public async Task<ActionResult<RaceDto>> Get(int id)
         {
             var race = await dataContext.Races.FindAsync(id);
             if (race == null) return NotFound();
-            return Ok(new RaceModel(race));
+            return Ok(new RaceDto(race));
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateRace([FromBody]RaceModel race)
+        public async Task<ActionResult<int>> CreateRace([FromBody]RaceDto race)
         {
             if (race == null)
                 return BadRequest("Race not set");
@@ -43,7 +43,7 @@ namespace VeloTiming.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateRace(int id, [FromBody]RaceModel race)
+        public async Task<ActionResult<RaceDto>> UpdateRace(int id, [FromBody]RaceDto race)
         {
             if (race == null || !race.IsValid())
                 return BadRequest(race?.Errrors());
@@ -52,10 +52,10 @@ namespace VeloTiming.Controllers
 
             dataContext.Races.Update(race.UpdateEntity(entity));
             await dataContext.SaveChangesAsync();
-            return Ok(new RaceModel(entity));
+            return Ok(new RaceDto(entity));
         }
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteRace(int id)
+        public async Task<ActionResult<bool>> DeleteRace(int id)
         {
             var entity = await dataContext.Races.FindAsync(id);
             if (entity == null) return NotFound();
@@ -65,10 +65,10 @@ namespace VeloTiming.Controllers
         }
     }
 
-    public class RaceModel
+    public class RaceDto
     {
-        public RaceModel() { }
-        public RaceModel(Race race)
+        public RaceDto() { }
+        public RaceDto(Race race)
         {
             Id = race.Id;
             Name = race.Name;

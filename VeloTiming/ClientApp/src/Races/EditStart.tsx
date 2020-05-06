@@ -1,14 +1,14 @@
 import React from 'react'
-import { Start, Sex, RaceCategory } from './RaceService'
-import { object as yupObject, string as yupString, date as yupDate } from 'yup'
+import { object as yupObject, string as yupString } from 'yup'
 import { Formik } from 'formik';
 import { Form, Col, Button } from 'react-bootstrap'
 import Feedback from 'react-bootstrap/Feedback';
+import { StartDto, RaceCategoryDto, Sex } from '../clients';
 
 interface Props {
-    start: Start
-    categories: RaceCategory[]
-    onSubmit: (start?: Start) => void
+    start: StartDto
+    categories: RaceCategoryDto[]
+    onSubmit: (start?: StartDto) => void
 }
 
 const schema = yupObject({
@@ -16,28 +16,27 @@ const schema = yupObject({
     plannedStart: yupString().nullable()
 })
 interface CategoryValues { [key: number]: boolean }
-type FormValues = Start & { categoryChecks: CategoryValues }
+type FormValues = Omit<StartDto & { categoryChecks: CategoryValues }, 'init' | 'toJSON'>
 
 const EditStart: React.SFC<Props> = (props) => {
     function onSubmit(values: FormValues) {
-        const cats: RaceCategory[] = []
+        const cats: RaceCategoryDto[] = []
         for (const key in values.categoryChecks) {
             if (values.categoryChecks.hasOwnProperty(key)) {
                 const id = parseInt(key, 10)
                 const category = props.categories.find(c => c.id === id)
                 if (values.categoryChecks[key] && category) {
-                    cats.push({ id, name: category.name, code: category.code })
+                    cats.push(new RaceCategoryDto(category))
                     // console.log(`${key}: ${values.categoryChecks[key]} (${category.code})`)
                 }
             }
         }
-        const result = { ...values, categories: cats }
-        delete result.categoryChecks
+        const result = new StartDto({ ...values, categories: cats })
         props.onSubmit(result)
     }
 
     const catProps = {} as CategoryValues
-    props.categories.forEach(cat => { catProps[cat.id] = props.start.categories.find(sc => sc.id === cat.id) !== undefined })
+    props.categories.forEach(cat => { catProps[cat.id] = props.start?.categories?.find(sc => sc.id === cat.id) !== undefined })
     const formValues: FormValues = { ...props.start, categoryChecks: catProps }
 
     function onReset() {
@@ -57,8 +56,7 @@ const EditStart: React.SFC<Props> = (props) => {
                         </Form.Group>
                         <Form.Group as={Col} controlId="plannedStart" className="col-2">
                             <Form.Label>Время старта</Form.Label>
-                            <Form.Control type="time" value={values.plannedStart && values.plannedStart.includes('T')
-                                && values.plannedStart.substring(values.plannedStart.indexOf('T') + 1) || values.plannedStart || ''}
+                            <Form.Control type="time" value={values.plannedStart?.toLocaleTimeString()}
                                 name="plannedStart"
                                 onChange={handleChange} isInvalid={touched.plannedStart && !!errors.plannedStart} />
                             <Feedback type="invalid">{errors.plannedStart}</Feedback>

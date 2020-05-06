@@ -19,13 +19,13 @@ namespace VeloTiming.Controllers
         }
 
         [HttpGet]
-        public IEnumerable<NumberModel> Get()
+        public ActionResult<NumberModel[]> Get()
         {
-            return numberService.GetAll();
+            return Ok(numberService.GetAll());
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(string id)
+        public async Task<ActionResult<NumberModel[]>> Delete(string id)
         {
             try
             {
@@ -43,7 +43,7 @@ namespace VeloTiming.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddOrUpdate([FromBody] NumberModel model)
+        public async Task<ActionResult<NumberModel[]>> AddOrUpdate([FromBody] NumberModel model)
         {
             if (model == null || string.IsNullOrEmpty(model.Id))
                 return BadRequest("Number not posted");

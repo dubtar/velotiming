@@ -1,14 +1,14 @@
 import { RouteComponentProps } from "react-router";
 import React from 'react'
-import { Spinner, Alert, Row, Col, Button, Tab, Tabs } from "react-bootstrap";
-import RaceService, { Race, RaceCategory } from "./RaceService";
+import { Spinner, Alert, Row, Col, Tab, Tabs } from "react-bootstrap";
 import CategoryList from "./CategoryList"
 import RidersList from "./RidersList"
 import StartsList from './StartsList'
+import { RacesClient, RaceDto } from "../clients";
 
 const InitialState = {
     raceId: 0,
-    race: undefined as Race | undefined,
+    race: undefined as RaceDto | undefined,
     error: ''
 }
 
@@ -22,7 +22,7 @@ export default class RaceView extends React.Component<Props, typeof InitialState
 
     public async componentDidMount() {
         try {
-            const race = await RaceService.GetRace(this.state.raceId)
+            const race = await new RacesClient().get(this.state.raceId)
             this.setState({ race })
         }
         catch (ex) {
@@ -35,7 +35,7 @@ export default class RaceView extends React.Component<Props, typeof InitialState
         if (!this.state.race) return <Spinner animation="grow"/>
         return (
             <Row><Col>
-                <h1>{this.state.race.name} <small>{new Date(this.state.race.date).toLocaleDateString('ru')}</small></h1>
+                <h1>{this.state.race.name} <small>{this.state.race.date && this.state.race.date?.toLocaleDateString('ru')}</small></h1>
                 <p className="lead">{this.state.race.description}</p>
                 <Tabs id="raceTabs">
                     <Tab eventKey="categories" title="Категории">

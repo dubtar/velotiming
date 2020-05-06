@@ -48,7 +48,7 @@ export default class RidersList extends React.Component<Props, typeof InitialSta
     }
 
     public async deleteRider(riderId: number) {
-        if (confirm('Удалить участника?')) {
+        if (window.confirm('Удалить участника?')) {
             try {
                 const riders = await RaceService.DeleteRider(riderId);
                 this.setState({ riders })

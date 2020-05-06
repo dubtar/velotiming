@@ -1,5 +1,3 @@
-import { number } from 'yup';
-
 export interface Race {
     id: number;
     name: string;
@@ -77,7 +75,7 @@ export default class RaceService {
         }).then(this.checkStatus)
     }
 
-    public static DeleteRace(id: number): Promise<{}> {
+    public static DeleteRace(id: number): Promise<void> {
         return fetch(apiUrl + id, {
             method: 'delete'
         }).then(this.checkStatus);

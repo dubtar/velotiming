@@ -20,15 +20,15 @@ namespace VeloTiming.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int id)
+        public async Task<ActionResult<StartDto[]>> Get(int id)
         {
             var starts = await dataContext.Starts.Where(rc => rc.RaceId == id).Include(r => r.Categories)
                 .ThenInclude(rc => rc.Category).ToArrayAsync();
-            return Ok(starts.Select(c => new StartModel(c)));
+            return Ok(starts.Select(c => new StartDto(c)));
         }
 
         [HttpPost("{id}")]
-        public async Task<IActionResult> Add(int id, [FromBody] StartModel start)
+        public async Task<ActionResult<StartDto[]>> Add(int id, [FromBody] StartDto start)
         {
             if (start == null) return BadRequest("Start not posted");
             var race = await dataContext.Races.FindAsync(id);
@@ -42,7 +42,7 @@ namespace VeloTiming.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> Update([FromBody] StartModel start)
+        public async Task<ActionResult<StartDto[]>> Update([FromBody] StartDto start)
         {
             if (start == null) return BadRequest("Start not set");
             var entity = await dataContext.Starts.FindAsync(start.Id);
@@ -53,8 +53,9 @@ namespace VeloTiming.Controllers
             await dataContext.SaveChangesAsync();
             return await Get(raceId);
         }
+
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<ActionResult<StartDto[]>> Delete(int id)
         {
             var entity = await dataContext.Starts.FindAsync(id);
             if (entity == null) return NotFound();
@@ -66,17 +67,17 @@ namespace VeloTiming.Controllers
         }
     }
 
-    public class StartModel
+    public class StartDto
     {
-        public StartModel() { }
-        public StartModel(Start start)
+        public StartDto() { }
+        public StartDto(Start start)
         {
             this.Id = start.Id;
             this.Name = start.Name;
             this.PlannedStart = start.PlannedStart;
             this.RealStart = start.RealStart;
             this.End = start.End;
-            this.Categories = start.Categories?.Select(c => new RaceCategoryModel(c.Category)).ToArray() ?? new RaceCategoryModel[0];
+            this.Categories = start.Categories?.Select(c => new RaceCategoryDto(c.Category)).ToArray() ?? new RaceCategoryDto[0];
         }
 
         internal Start UpdateEntity(Start start, DataContext dataContext)
@@ -107,6 +108,6 @@ namespace VeloTiming.Controllers
         public DateTime? PlannedStart { get; set; }
         public DateTime? RealStart { get; set; }
         public DateTime? End { get; set; }
-        public RaceCategoryModel[] Categories { get; set; } = new RaceCategoryModel[0];
+        public RaceCategoryDto[] Categories { get; set; } = new RaceCategoryDto[0];
     }
 }

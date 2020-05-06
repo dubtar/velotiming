@@ -26,7 +26,7 @@ export default class RaceEdit extends React.Component<Props, typeof InitialState
         super(props);
         const state = { ...InitialState }
         if (this.props.match.params.id) {
-            state.raceId = parseInt(this.props.match.params.id)
+            state.raceId = parseInt(this.props.match.params.id, 10)
         }
         else {
             state.race = {}

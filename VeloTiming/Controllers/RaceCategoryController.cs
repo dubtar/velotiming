@@ -17,15 +17,15 @@ namespace VeloTiming.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int id)
+        public async Task<ActionResult<RaceCategoryDto[]>> Get(int id)
         {
             var categories = await dataContext.RaceCategories.Where(rc => rc.RaceId == id).ToArrayAsync();
             if (categories == null) return NotFound();
-            return Ok(categories.Select(c => new RaceCategoryModel(c)));
+            return Ok(categories.Select(c => new RaceCategoryDto(c)));
         }
 
         [HttpPost("{id}")]
-        public async Task<IActionResult> Add(int id, [FromBody] RaceCategoryModel category)
+        public async Task<ActionResult<int>> Add(int id, [FromBody] RaceCategoryDto category)
         {
             var race = await dataContext.Races.FindAsync(id);
             if (race == null) return NotFound();
@@ -38,7 +38,7 @@ namespace VeloTiming.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> Update([FromBody] RaceCategoryModel category)
+        public async Task<ActionResult<RaceCategoryDto>> Update([FromBody] RaceCategoryDto category)
         {
             if (category == null) return BadRequest("Category not set");
             var entity = await dataContext.RaceCategories.FindAsync(category.Id);
@@ -46,10 +46,10 @@ namespace VeloTiming.Controllers
             category.UpdateEntity(entity);
             dataContext.RaceCategories.Update(entity);
             await dataContext.SaveChangesAsync();
-            return Ok(new RaceCategoryModel(entity));
+            return Ok(new RaceCategoryDto(entity));
         }
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<ActionResult<RaceCategoryDto[]>> Delete(int id)
         {
             var entity = await dataContext.RaceCategories.FirstOrDefaultAsync(rc => rc.Id == id);
             if (entity == null) return NotFound();
@@ -62,10 +62,10 @@ namespace VeloTiming.Controllers
             return await Get(raceId);
         }
     }
-    public class RaceCategoryModel
+    public class RaceCategoryDto
     {
-        public RaceCategoryModel() { }
-        public RaceCategoryModel(RaceCategory cat)
+        public RaceCategoryDto() { }
+        public RaceCategoryDto(RaceCategory cat)
         {
             this.Id = cat.Id;
             this.Name = cat.Name;

@@ -1,4 +1,4 @@
-import { RouteComponentProps, Redirect } from "react-router";
+import { RouteComponentProps } from "react-router";
 import RaceService, { Race } from "./RaceService";
 import { Row, Table, Button, Alert, Spinner, ButtonGroup } from "react-bootstrap";
 import React, { SyntheticEvent } from 'react'
@@ -20,43 +20,11 @@ export default class RaceList extends React.Component<Props, typeof InitialState
         this.loadRaces = this.loadRaces.bind(this);
     }
 
-    componentDidMount() {
+    public componentDidMount() {
         this.loadRaces();
     }
 
-    async loadRaces() {
-        this.setState({ races: null });
-        try {
-
-            const races = await RaceService.GetRaces();
-            this.setState({ races })
-        } catch (ex) {
-            this.setState({ error: ex.toString() })
-        }
-    }
-
-    async deleteRace(race: Race, e: SyntheticEvent) {
-        e.stopPropagation()
-        e.preventDefault()
-        if (confirm(`Удалить гонку ${race.name}?`)) {
-
-            try {
-                await RaceService.DeleteRace(race.id)
-                this.loadRaces();
-            } catch (ex) {
-                this.setState({ error: ex.toString() })
-            }
-        }
-    }
-
-    openRace(id: number, e: SyntheticEvent) {
-        e.stopPropagation()
-        e.preventDefault()
-        this.props.history.push(`${this.props.match.path}/${id}`)
-        // this.setState({ gotoRace: id })
-    }
-
-    render() {
+    public render() {
         return (
             <Row>
                 {this.state.error && <Alert variant="danger">{this.state.error}</Alert>}
@@ -68,7 +36,7 @@ export default class RaceList extends React.Component<Props, typeof InitialState
                                 <th scope="col">Дата</th>
                                 <th scope="col">Название</th>
                                 <th scope="col">Описание</th>
-                                <th></th>
+                                <th />
                             </tr></thead>
                             <tbody>
                                 {this.state.races.map(r => (
@@ -76,7 +44,7 @@ export default class RaceList extends React.Component<Props, typeof InitialState
                                         <td>{new Date(r.date).toLocaleDateString('ru')}</td>
                                         <td>{r.name}</td>
                                         <td>{r.description}</td>
-                                        <td onClick={(e) => { e.stopPropagation() }}>
+                                        <td onClick={this.stopPropagation}>
                                             <ButtonGroup>
                                                 <Link className="btn btn-outline-primary" to={`${this.props.match.path}/${r.id}`}>Перейти</Link>
                                                 <Link to={`${this.props.match.path}/add/${r.id}`} className="btn btn-outline-warning">Изменить</Link>
@@ -91,8 +59,42 @@ export default class RaceList extends React.Component<Props, typeof InitialState
                         </Link>
                     </Row>)}
 
-                {this.state.races === null && <Spinner animation="border" className="m-3"></Spinner>}
+                {this.state.races === null && <Spinner animation="border" className="m-3" />}
             </Row>
         )
     }
+
+    private async loadRaces() {
+        this.setState({ races: null });
+        try {
+
+            const races = await RaceService.GetRaces();
+            this.setState({ races })
+        } catch (ex) {
+            this.setState({ error: ex.toString() })
+        }
+    }
+
+    private async deleteRace(race: Race, e: SyntheticEvent) {
+        e.stopPropagation()
+        e.preventDefault()
+        if (window.confirm(`Удалить гонку ${race.name}?`)) {
+
+            try {
+                await RaceService.DeleteRace(race.id)
+                this.loadRaces();
+            } catch (ex) {
+                this.setState({ error: ex.toString() })
+            }
+        }
+    }
+
+    private openRace(id: number, e: SyntheticEvent) {
+        e.stopPropagation()
+        e.preventDefault()
+        this.props.history.push(`${this.props.match.path}/${id}`)
+        // this.setState({ gotoRace: id })
+    }
+
+    private stopPropagation(e: React.SyntheticEvent) { e.stopPropagation() }
 }
