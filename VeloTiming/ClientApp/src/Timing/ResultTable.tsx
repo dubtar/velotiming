@@ -27,7 +27,7 @@ const ResultTable: React.SFC<Props> = (props: Props) => {
                         <td>{Svc.formatTime(mark.time)}</td>
                         <td>{mark.number}</td>
                         <td>{mark.name}</td>
-                        <td><small>{(mark.time && mark.time.toLocaleTimeString('ru') || mark.createdOn && mark.createdOn.toLocaleDateString && mark.createdOn.toLocaleTimeString('ru'))}</small></td>
+                        <td><small>{(mark.time || mark.createdOn)?.toLocaleTimeString('ru')}</small></td>
                     </tr>
                 ))}
             </tbody>

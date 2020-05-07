@@ -2,8 +2,7 @@ import React from "react";
 import { Table, Row, Col, Alert, Spinner, Button, ButtonGroup } from "react-bootstrap";
 import EditStart from "./EditStart";
 import { Redirect } from "react-router";
-import moment from 'moment';
-import { MainClient, StartClient, StartDto, RaceCategoryDto, RacesClient, RaceCategoryClient } from '../clients'
+import { MainClient, StartClient, StartDto, RaceCategoryDto, RaceCategoryClient } from '../clients'
 
 const InitialState = {
     starts: null as StartDto[] | null,
@@ -57,10 +56,10 @@ export default class StartsList extends React.Component<Props, typeof InitialSta
                                         <td>
                                             <ButtonGroup>
                                                 {start.realStart == null &&
-                                                    <Button variant="success" onClick={this.start.bind(this, start.id)}>Начать</Button>
+                                                    <Button variant="success" onClick={this.start.bind(this, start.id!)}>Начать</Button>
                                                 }
                                                 <Button variant="outline-primary" onClick={this.editStart.bind(this, start)}>Изменить</Button>
-                                                <Button variant="outline-danger" onClick={this.deleteStart.bind(this, start.id)}>Удалить</Button>
+                                                <Button variant="outline-danger" onClick={this.deleteStart.bind(this, start.id!)}>Удалить</Button>
                                             </ButtonGroup>
                                         </td>
                                     </tr>

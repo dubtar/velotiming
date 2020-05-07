@@ -1,12 +1,12 @@
 import React from 'react';
 import { Alert, Button, ButtonGroup, Col, Row, Spinner, Table } from 'react-bootstrap';
 import EditRider from './EditRider';
-import RaceService, { RaceCategory, Rider, Sex } from './RaceService';
+import { RiderClient, RiderDto, Sex } from '../clients';
 
 const InitialState = {
-    editRider: null as Rider | null,
+    editRider: null as RiderDto | null,
     error: null as string | null,
-    riders: null as Rider[] | null
+    riders: null as RiderDto[] | null
 }
 
 type Props = { raceId: number }
@@ -23,7 +23,7 @@ export default class RidersList extends React.Component<Props, typeof InitialSta
 
     public async componentDidMount() {
         try {
-            const riders = await RaceService.GetRiders(this.props.raceId)
+            const riders = await new RiderClient().get(this.props.raceId)
             this.setState({ riders })
         } catch (ex) {
             this.setState({ error: ex.toString() })
@@ -35,10 +35,10 @@ export default class RidersList extends React.Component<Props, typeof InitialSta
     }
 
     public addRider() {
-        this.setState({ editRider: { id: 0, firstName: '', lastName: '', sex: undefined } })
+        this.setState({ editRider: new RiderDto() })
     }
 
-    public editRider(editRider: Rider) {
+    public editRider(editRider: RiderDto) {
         this.setState({ editRider })
     }
 
@@ -50,7 +50,7 @@ export default class RidersList extends React.Component<Props, typeof InitialSta
     public async deleteRider(riderId: number) {
         if (window.confirm('Удалить участника?')) {
             try {
-                const riders = await RaceService.DeleteRider(riderId);
+                const riders = await new RiderClient().delete(riderId);
                 this.setState({ riders })
 
             } catch (ex) {
@@ -59,13 +59,13 @@ export default class RidersList extends React.Component<Props, typeof InitialSta
         }
     }
 
-    public async saveRider(rider?: Rider) {
+    public async saveRider(rider?: RiderDto) {
         try {
             if (rider) {
                 const riders = rider.id ?  // edit exiting
-                    await RaceService.UpdateRider(rider) :
+                    await new RiderClient().update(rider) :
                     // add new
-                    await RaceService.AddRider(this.props.raceId, rider)
+                    await new RiderClient().add(this.props.raceId, rider)
                 this.setState({ riders })
             }
         } catch (ex) {

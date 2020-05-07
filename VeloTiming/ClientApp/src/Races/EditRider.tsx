@@ -1,15 +1,15 @@
 import React from 'react'
-import RaceService, { RaceCategory, Rider, Sex } from './RaceService'
-import { string as yupString, number as yupNumber, ref as yupRef, object as yupObject } from 'yup'
+import { string as yupString, number as yupNumber, object as yupObject } from 'yup'
 import { Formik } from 'formik';
 import { Form, Col, Button } from 'react-bootstrap'
 import Feedback from 'react-bootstrap/Feedback';
 import * as signalR from '@aspnet/signalr';
+import { RiderDto, RaceCategoryClient, RaceCategoryDto, Sex } from '../clients';
 
 interface Props {
     raceId: number
-    rider: Rider
-    onSubmit: (rider?: Rider) => void
+    rider: RiderDto
+    onSubmit: (rider?: RiderDto) => void
 }
 
 const schema = yupObject({
@@ -20,7 +20,7 @@ const schema = yupObject({
     yearOfBirth: yupNumber().nullable().lessThan(new Date().getFullYear(), 'Не похож на г.р.').moreThan(1900, 'Не похож на г.р.')
 })
 
-const InitialState = { rfidNumber: '', categories: null as RaceCategory[] | null }
+const InitialState = { rfidNumber: '', categories: null as RaceCategoryDto[] | null }
 
 export default class EditRider extends React.Component<Props, typeof InitialState> {
     private sRconn: signalR.HubConnection | undefined
@@ -32,7 +32,7 @@ export default class EditRider extends React.Component<Props, typeof InitialStat
 
 
     public componentDidMount() {
-        RaceService.GetRaceCategories(this.props.raceId).then(categories => {
+        new RaceCategoryClient().get(this.props.raceId).then(categories => {
             this.setState({ categories })
         })
         this.sRconn = new signalR.HubConnectionBuilder().withUrl('/rfidHub').build();
@@ -98,7 +98,7 @@ export default class EditRider extends React.Component<Props, typeof InitialStat
                                 </Form.Group>
                                 <Form.Group as={Col} controlId="yearOfBirth" className="col-1">
                                     <Form.Label>Г.р.</Form.Label>
-                                    <Form.Control type="number" value={values.yearOfBirth && values.yearOfBirth.toString() || ''}
+                                    <Form.Control type="number" value={values.yearOfBirth?.toString() || ''}
                                         name="yearOfBirth" onChange={this.onChangeAndSetDefaultCategory({ handleChange, values, categories, setFieldValue })}
                                         isInvalid={touched.yearOfBirth && !!errors.yearOfBirth} />
                                     <Feedback type="invalid">{errors.yearOfBirth}</Feedback>
@@ -138,11 +138,11 @@ export default class EditRider extends React.Component<Props, typeof InitialStat
     }
 
     private onChangeAndSetDefaultCategory({ handleChange, values, categories, setFieldValue }:
-        { handleChange: (e: React.ChangeEvent<EventTarget>) => void; values: Rider; categories: RaceCategory[]; setFieldValue: (field: string, value: any) => void; }) {
+        { handleChange: (e: React.ChangeEvent<EventTarget>) => void; values: RiderDto; categories: RaceCategoryDto[]; setFieldValue: (field: string, value: any) => void; }) {
         return (e: React.ChangeEvent<EventTarget>) => {
             handleChange(e);
             const yearText = (e.target as HTMLInputElement).value;
-            const year = yearText && parseInt(yearText, 10) || 0;
+            const year = (yearText && parseInt(yearText, 10)) || 0
             const sex = values.sex;
             if (sex && year > 1900 && year < new Date().getFullYear() && !values.category) {
                 const category = categories.find(cat => cat.sex === sex &&

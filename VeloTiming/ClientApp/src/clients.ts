@@ -584,6 +584,44 @@ export class RacesClient {
         return Promise.resolve<number>(<any>null);
     }
 
+    updateRace(race: RaceDto): Promise<RaceDto> {
+        let url_ = this.baseUrl + "/api/races";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(race);
+
+        let options_ = <RequestInit>{
+            body: content_,
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processUpdateRace(_response);
+        });
+    }
+
+    protected processUpdateRace(response: Response): Promise<RaceDto> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = RaceDto.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<RaceDto>(<any>null);
+    }
+
     get(id: number): Promise<RaceDto> {
         let url_ = this.baseUrl + "/api/races/{id}";
         if (id === undefined || id === null)
@@ -604,47 +642,6 @@ export class RacesClient {
     }
 
     protected processGet(response: Response): Promise<RaceDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = RaceDto.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<RaceDto>(<any>null);
-    }
-
-    updateRace(id: number, race: RaceDto): Promise<RaceDto> {
-        let url_ = this.baseUrl + "/api/races/{id}";
-        if (id === undefined || id === null)
-            throw new Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(race);
-
-        let options_ = <RequestInit>{
-            body: content_,
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processUpdateRace(_response);
-        });
-    }
-
-    protected processUpdateRace(response: Response): Promise<RaceDto> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -1061,10 +1058,10 @@ export class StartClient {
 }
 
 export class CurrentRaceDto implements ICurrentRaceDto {
-    raceName?: string | undefined;
-    startName?: string | undefined;
+    raceName!: string | undefined;
+    startName!: string | undefined;
     startId!: number;
-    start?: Date | undefined;
+    start!: Date | undefined;
 
     constructor(data?: ICurrentRaceDto) {
         if (data) {
@@ -1102,20 +1099,20 @@ export class CurrentRaceDto implements ICurrentRaceDto {
 }
 
 export interface ICurrentRaceDto {
-    raceName?: string | undefined;
-    startName?: string | undefined;
+    raceName: string | undefined;
+    startName: string | undefined;
     startId: number;
-    start?: Date | undefined;
+    start: Date | undefined;
 }
 
 export class MarkDto implements IMarkDto {
-    id?: string | undefined;
+    id!: string | undefined;
     createdOn!: Date;
-    time?: Date | undefined;
-    number?: string | undefined;
-    name?: string | undefined;
-    timeSource?: string | undefined;
-    numberSource?: string | undefined;
+    time!: Date | undefined;
+    number!: string | undefined;
+    name!: string | undefined;
+    timeSource!: string | undefined;
+    numberSource!: string | undefined;
     lap!: number;
     place!: number;
 
@@ -1165,20 +1162,20 @@ export class MarkDto implements IMarkDto {
 }
 
 export interface IMarkDto {
-    id?: string | undefined;
+    id: string | undefined;
     createdOn: Date;
-    time?: Date | undefined;
-    number?: string | undefined;
-    name?: string | undefined;
-    timeSource?: string | undefined;
-    numberSource?: string | undefined;
+    time: Date | undefined;
+    number: string | undefined;
+    name: string | undefined;
+    timeSource: string | undefined;
+    numberSource: string | undefined;
     lap: number;
     place: number;
 }
 
 export class NumberModel implements INumberModel {
-    id?: string | undefined;
-    rfids?: string[] | undefined;
+    id!: string | undefined;
+    rfids!: string[] | undefined;
 
     constructor(data?: INumberModel) {
         if (data) {
@@ -1220,17 +1217,17 @@ export class NumberModel implements INumberModel {
 }
 
 export interface INumberModel {
-    id?: string | undefined;
-    rfids?: string[] | undefined;
+    id: string | undefined;
+    rfids: string[] | undefined;
 }
 
 export class RaceCategoryDto implements IRaceCategoryDto {
     id!: number;
-    name?: string | undefined;
-    code?: string | undefined;
+    name!: string | undefined;
+    code!: string | undefined;
     sex!: Sex;
-    minYearOfBirth?: number | undefined;
-    maxYearOfBirth?: number | undefined;
+    minYearOfBirth!: number | undefined;
+    maxYearOfBirth!: number | undefined;
 
     constructor(data?: IRaceCategoryDto) {
         if (data) {
@@ -1273,11 +1270,11 @@ export class RaceCategoryDto implements IRaceCategoryDto {
 
 export interface IRaceCategoryDto {
     id: number;
-    name?: string | undefined;
-    code?: string | undefined;
+    name: string | undefined;
+    code: string | undefined;
     sex: Sex;
-    minYearOfBirth?: number | undefined;
-    maxYearOfBirth?: number | undefined;
+    minYearOfBirth: number | undefined;
+    maxYearOfBirth: number | undefined;
 }
 
 export enum Sex {
@@ -1287,8 +1284,8 @@ export enum Sex {
 
 export class RaceDto implements IRaceDto {
     id!: number;
-    name?: string | undefined;
-    description?: string | undefined;
+    name!: string | undefined;
+    description!: string | undefined;
     date!: Date;
     type!: RaceType;
 
@@ -1331,8 +1328,8 @@ export class RaceDto implements IRaceDto {
 
 export interface IRaceDto {
     id: number;
-    name?: string | undefined;
-    description?: string | undefined;
+    name: string | undefined;
+    description: string | undefined;
     date: Date;
     type: RaceType;
 }
@@ -1344,15 +1341,15 @@ export enum RaceType {
 
 export class RiderDto implements IRiderDto {
     id!: number;
-    number?: string | undefined;
-    firstName?: string | undefined;
-    lastName?: string | undefined;
+    number!: string | undefined;
+    firstName!: string | undefined;
+    lastName!: string | undefined;
     sex!: Sex;
     yearOfBirth!: number;
-    category?: string | undefined;
-    categoryName?: string | undefined;
-    city?: string | undefined;
-    team?: string | undefined;
+    category!: string | undefined;
+    categoryName!: string | undefined;
+    city!: string | undefined;
+    team!: string | undefined;
 
     constructor(data?: IRiderDto) {
         if (data) {
@@ -1403,24 +1400,24 @@ export class RiderDto implements IRiderDto {
 
 export interface IRiderDto {
     id: number;
-    number?: string | undefined;
-    firstName?: string | undefined;
-    lastName?: string | undefined;
+    number: string | undefined;
+    firstName: string | undefined;
+    lastName: string | undefined;
     sex: Sex;
     yearOfBirth: number;
-    category?: string | undefined;
-    categoryName?: string | undefined;
-    city?: string | undefined;
-    team?: string | undefined;
+    category: string | undefined;
+    categoryName: string | undefined;
+    city: string | undefined;
+    team: string | undefined;
 }
 
 export class StartDto implements IStartDto {
     id!: number;
-    name?: string | undefined;
-    plannedStart?: Date | undefined;
-    realStart?: Date | undefined;
-    end?: Date | undefined;
-    categories?: RaceCategoryDto[] | undefined;
+    name!: string | undefined;
+    plannedStart!: Date | undefined;
+    realStart!: Date | undefined;
+    end!: Date | undefined;
+    categories!: RaceCategoryDto[] | undefined;
 
     constructor(data?: IStartDto) {
         if (data) {
@@ -1471,11 +1468,11 @@ export class StartDto implements IStartDto {
 
 export interface IStartDto {
     id: number;
-    name?: string | undefined;
-    plannedStart?: Date | undefined;
-    realStart?: Date | undefined;
-    end?: Date | undefined;
-    categories?: RaceCategoryDto[] | undefined;
+    name: string | undefined;
+    plannedStart: Date | undefined;
+    realStart: Date | undefined;
+    end: Date | undefined;
+    categories: RaceCategoryDto[] | undefined;
 }
 
 export class ApiException extends Error {

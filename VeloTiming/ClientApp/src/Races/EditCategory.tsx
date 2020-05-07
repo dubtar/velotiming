@@ -1,13 +1,13 @@
 import React from 'react'
-import { RaceCategory, Sex } from './RaceService';
 import { Formik } from 'formik';
 import { string as yupString, number as yupNumber, ref as yupRef, object as yupObject } from 'yup'
 import { Form, Col, Button } from 'react-bootstrap';
 import Feedback from 'react-bootstrap/Feedback';
+import { IRaceCategoryDto, Sex } from '../clients';
 
 interface Props {
-    category: RaceCategory;
-    onSubmit: (category?: RaceCategory) => void;
+    category: IRaceCategoryDto;
+    onSubmit: (category?: IRaceCategoryDto) => void;
 }
 
 const schema = yupObject({
@@ -66,14 +66,14 @@ const EditCategory: React.SFC<Props> = (props: Props) => {
                         </Form.Group>
                         <Form.Group as={Col} className="col-2">
                             <Form.Label>Г.р. мин</Form.Label>
-                            <Form.Control type="number" value={values.minYearOfBirth && values.minYearOfBirth.toString() || ''}
+                            <Form.Control type="number" value={values.minYearOfBirth?.toString() || ''}
                                 name="minYearOfBirth" min={1900} max={new Date().getFullYear()}
                                 onChange={handleChange} isInvalid={touched.minYearOfBirth && !!errors.minYearOfBirth} />
                             <Feedback type="invalid">{errors.minYearOfBirth}</Feedback>
                         </Form.Group>
                         <Form.Group as={Col} className="col-2">
                             <Form.Label>Г.р. макс</Form.Label>
-                            <Form.Control type="number" value={values.maxYearOfBirth && values.maxYearOfBirth.toString() || ''}
+                            <Form.Control type="number" value={values.maxYearOfBirth?.toString() || ''}
                                 name="maxYearOfBirth" min={1900} max={new Date().getFullYear()}
                                 onChange={handleChange} isInvalid={touched.maxYearOfBirth && !!errors.maxYearOfBirth} />
                             <Feedback type="invalid">{errors.maxYearOfBirth}</Feedback>

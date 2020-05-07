@@ -1,13 +1,13 @@
 import { RouteComponentProps } from "react-router";
-import RaceService, { Race } from "./RaceService";
 import { Row, Table, Button, Alert, Spinner, ButtonGroup } from "react-bootstrap";
 import React, { SyntheticEvent } from 'react'
 import { Link } from "react-router-dom";
+import { RaceDto, RacesClient } from "../clients";
 
 
 const InitialState = {
     error: null as string | null,
-    races: null as Race[] | null
+    races: null as RaceDto[] | null
 }
 
 type Props = RouteComponentProps<{}>
@@ -17,7 +17,6 @@ export default class RaceList extends React.Component<Props, typeof InitialState
     constructor(props: Props) {
         super(props);
         this.state = InitialState;
-        this.loadRaces = this.loadRaces.bind(this);
     }
 
     public componentDidMount() {
@@ -68,20 +67,20 @@ export default class RaceList extends React.Component<Props, typeof InitialState
         this.setState({ races: null });
         try {
 
-            const races = await RaceService.GetRaces();
+            const races = await new RacesClient().getRaces();
             this.setState({ races })
         } catch (ex) {
             this.setState({ error: ex.toString() })
         }
     }
 
-    private async deleteRace(race: Race, e: SyntheticEvent) {
+    private  async deleteRace(race: RaceDto, e: SyntheticEvent) {
         e.stopPropagation()
         e.preventDefault()
         if (window.confirm(`Удалить гонку ${race.name}?`)) {
 
             try {
-                await RaceService.DeleteRace(race.id)
+                await new RacesClient().deleteRace(race.id)
                 this.loadRaces();
             } catch (ex) {
                 this.setState({ error: ex.toString() })

@@ -1,9 +1,10 @@
 import { RouteComponentProps } from "react-router";
 import React from "react";
 import { Form, Button, Alert, Row, Spinner, Col } from "react-bootstrap";
-import { object as yupObject, string as yupString, number as yupNumber, date as yupDate, number } from 'yup'
+import { object as yupObject, string as yupString, date as yupDate } from 'yup'
 import { Formik } from 'formik'
-import RaceService, { Race, RaceType } from "./RaceService";
+import { RaceDto, RacesClient, RaceType } from "../clients";
+import moment from "moment";
 
 
 const schema = yupObject({
@@ -14,7 +15,7 @@ const schema = yupObject({
 
 const InitialState = {
     raceId: 0,
-    race: null as Partial<Race> | null,
+    race: null as RaceDto | null,
     sending: false,
     error: null as string | null
 }
@@ -29,7 +30,8 @@ export default class RaceEdit extends React.Component<Props, typeof InitialState
             state.raceId = parseInt(this.props.match.params.id, 10)
         }
         else {
-            state.race = {}
+            state.race = new RaceDto()
+            state.race.name = state.race.description = '' // to init default values with empty strings instead of undefined to make react happy
         }
         this.state = state;
         this.onSubmit = this.onSubmit.bind(this)
@@ -38,11 +40,7 @@ export default class RaceEdit extends React.Component<Props, typeof InitialState
     public async componentDidMount() {
         try {
             if (this.state.raceId) {
-                const race = await RaceService.GetRace(this.state.raceId)
-                if (race && race.date) {
-                    const ind = race.date.indexOf('T')
-                    if (ind) race.date = race.date.substring(0, ind)
-                }
+                const race = await new RacesClient().get(this.state.raceId)
                 this.setState({ race })
             }
         }
@@ -51,14 +49,17 @@ export default class RaceEdit extends React.Component<Props, typeof InitialState
         }
     }
 
-    public async onSubmit(values: Partial<Race>) {
+    public async onSubmit(values: RaceDto) {
         this.setState({ sending: true });
+        if (values.date && typeof(values.date) === 'string') {
+            values.date = new Date(values.date);
+        }
         try {
             if (values.id) {
-                await RaceService.UpdateRace(values)
+                await new RacesClient().updateRace(values)
             }
             else {
-                await RaceService.AddRace(values)
+                await new RacesClient().createRace(values)
             }
             this.props.history.goBack();
         } catch (ex) {
@@ -79,7 +80,7 @@ export default class RaceEdit extends React.Component<Props, typeof InitialState
                                 <Form.Group controlId="date">
                                     <Form.Label>Дата</Form.Label>
                                     <Form.Control required type="date" placeholder="Дата гонки" name="date"
-                                        value={values.date} onChange={handleChange}
+                                        value={moment(values.date).format('YYYY-MM-DD')} onChange={handleChange}
                                         isInvalid={touched.date && !!errors.date} isValid={touched.date && !errors.date}
                                     />
                                     <Form.Control.Feedback type="invalid">{errors.date}</Form.Control.Feedback>
@@ -96,7 +97,7 @@ export default class RaceEdit extends React.Component<Props, typeof InitialState
                                 <Form.Group controlId="type">
                                     <Form.Label>Тип</Form.Label>
                                     <Form.Check type="radio"
-                                        checked={values.type === RaceType.Laps}
+                                        checked={values.type + '' === RaceType.Laps + ''}
                                         value={RaceType.Laps}
                                         name="type"
                                         label="Групповая гонка"
@@ -105,7 +106,7 @@ export default class RaceEdit extends React.Component<Props, typeof InitialState
                                         id="typeLaps"
                                     />
                                     <Form.Check type="radio"
-                                        checked={values.type === RaceType.TimeTrial}
+                                        checked={values.type + '' === RaceType.TimeTrial + ''}
                                         value={RaceType.TimeTrial}
                                         name="type"
                                         label="Раздельный старт"
@@ -117,7 +118,7 @@ export default class RaceEdit extends React.Component<Props, typeof InitialState
                                     <Form.Control.Feedback type="invalid">{errors.type}</Form.Control.Feedback>
                                 </Form.Group>
                                 <Form.Group controlId="description">
-                                    <Form.Label>Название</Form.Label>
+                                    <Form.Label>Описание</Form.Label>
                                     <Form.Control type="textarea" placeholder="Описание" name="description"
                                         value={values.description} onChange={handleChange} isValid={touched.description && !errors.description} />
                                     <Form.Control.Feedback type="invalid">{errors.description}</Form.Control.Feedback>

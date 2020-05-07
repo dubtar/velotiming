@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
@@ -45,12 +46,21 @@ namespace VeloTiming
 
             services.AddHostedService<QueuedHostedService>();
             services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
-			
-			services.AddControllers();
+
+            services.AddControllers()
+            .AddJsonOptions(configure => 
+                configure.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()))
+            ;
 
             // Register the Swagger services
-            services.AddSwaggerDocument();
-			
+            services.AddOpenApiDocument(
+                // configuration => {
+                //     configuration.SerializerSettings = new Newtonsoft.Json.JsonSerializerSettings {
+                //         Converters = new System.Collections.Generic.List<
+                //     };
+                    //configuration.DefaultEnumHandling = NJsonSchema.Generation.EnumHandling.String; };
+            );
+
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
             {
@@ -78,7 +88,7 @@ namespace VeloTiming
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
 
-			app.UseRouting();
+            app.UseRouting();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(

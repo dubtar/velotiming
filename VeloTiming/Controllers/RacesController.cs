@@ -42,18 +42,19 @@ namespace VeloTiming.Controllers
             return Ok(entity.Id);
         }
 
-        [HttpPut("{id}")]
-        public async Task<ActionResult<RaceDto>> UpdateRace(int id, [FromBody]RaceDto race)
+        [HttpPut()]
+        public async Task<ActionResult<RaceDto>> UpdateRace([FromBody]RaceDto race)
         {
             if (race == null || !race.IsValid())
                 return BadRequest(race?.Errrors());
-            var entity = await dataContext.Races.FindAsync(id);
+            var entity = await dataContext.Races.FindAsync(race.Id);
             if (entity == null) return NotFound();
 
             dataContext.Races.Update(race.UpdateEntity(entity));
             await dataContext.SaveChangesAsync();
             return Ok(new RaceDto(entity));
         }
+
         [HttpDelete("{id}")]
         public async Task<ActionResult<bool>> DeleteRace(int id)
         {

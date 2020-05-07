@@ -1,12 +1,12 @@
 import React from 'react'
-import RaceService, { RaceCategory, Sex } from './RaceService';
 import { Table, Button, ButtonGroup, Spinner, Alert } from 'react-bootstrap';
 import EditCategory from './EditCategory';
+import { RaceCategoryClient, RaceCategoryDto, Sex, IRaceCategoryDto } from '../clients';
 
 const InitialState = {
     error: undefined as string | undefined,
-    categories: null as RaceCategory[] | null,
-    editCategory: null as RaceCategory | null
+    categories: null as IRaceCategoryDto[] | null,
+    editCategory: null as IRaceCategoryDto | null
 }
 
 type Props = { raceId: number }
@@ -22,7 +22,7 @@ export default class CategoryList extends React.Component<Props, typeof InitialS
 
     public async componentDidMount() {
         try {
-            const categories = await RaceService.GetRaceCategories(this.props.raceId)
+            const categories = await new RaceCategoryClient().get(this.props.raceId)
             this.setState({ categories, error: undefined })
         } catch (ex) {
             this.setState({ error: ex.toString() })
@@ -69,17 +69,17 @@ export default class CategoryList extends React.Component<Props, typeof InitialS
     }
 
     private addCategory() {
-        this.setState({ editCategory: { id: 0, name: '', code: '' } })
+        this.setState({ editCategory: new RaceCategoryDto() })
     }
 
-    private editCategory(category: RaceCategory) {
+    private editCategory(category: IRaceCategoryDto) {
         this.setState({ editCategory: category });
     }
 
     private async deleteCategory(categoryId: number) {
         if (window.confirm('Удалить категорию?')) {
             try {
-                const categories = await RaceService.DeleteCategory(categoryId);
+                const categories = await new RaceCategoryClient().delete(categoryId);
                 this.setState({ categories, error: undefined })
 
             } catch (ex) {
@@ -88,16 +88,16 @@ export default class CategoryList extends React.Component<Props, typeof InitialS
         }
     }
 
-    private async saveCategory(category?: RaceCategory): Promise<void> {
+    private async saveCategory(category?: IRaceCategoryDto): Promise<void> {
         try {
             if (category) {
                 if (category.id) { // edit exiting
-                    await RaceService.UpdateCategory(category);
+                    await new RaceCategoryClient().update(new RaceCategoryDto(category));
 
                 } else { // add new
-                    await RaceService.AddCategory(this.props.raceId, category)
+                    await new RaceCategoryClient().add(this.props.raceId, new RaceCategoryDto(category))
                 }
-                const categories = await RaceService.GetRaceCategories(this.props.raceId)
+                const categories = await new RaceCategoryClient().get(this.props.raceId)
                 this.setState({ categories, error: undefined })
             }
         } catch (ex) {

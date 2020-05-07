@@ -3,7 +3,7 @@ import { object as yupObject, string as yupString } from 'yup'
 import { Formik } from 'formik';
 import { Form, Col, Button } from 'react-bootstrap'
 import Feedback from 'react-bootstrap/Feedback';
-import { StartDto, RaceCategoryDto, Sex } from '../clients';
+import { StartDto, RaceCategoryDto } from '../clients';
 
 interface Props {
     start: StartDto
