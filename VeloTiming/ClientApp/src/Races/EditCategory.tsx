@@ -23,7 +23,7 @@ const schema = yupObject({
 })
 
 const EditCategory: React.SFC<Props> = (props: Props) => {
-    const onReset = () => props.onSubmit(undefined);
+    const onReset = () => props.onSubmit(undefined)
     return (
         <Formik validationSchema={schema} onSubmit={props.onSubmit} initialValues={props.category} onReset={onReset}>
             {({ handleSubmit, handleChange, handleReset, values, touched, errors }) => (
@@ -32,13 +32,13 @@ const EditCategory: React.SFC<Props> = (props: Props) => {
                     <Form.Row>
                         <Form.Group as={Col} controlId="code" className="col-2">
                             <Form.Label>Код</Form.Label>
-                            <Form.Control type="text" value={values.code} name="code" maxLength={3}
+                            <Form.Control type="text" value={values.code || ''} name="code" maxLength={3}
                                 onChange={handleChange} isInvalid={touched.code && !!errors.code} autoFocus />
                             <Feedback type="invalid">{errors.code}</Feedback>
                         </Form.Group>
                         <Form.Group as={Col} controlId="name" className="col-4">
                             <Form.Label>Название</Form.Label>
-                            <Form.Control type="text" value={values.name} name="name" maxLength={50}
+                            <Form.Control type="text" value={values.name || ''} name="name" maxLength={50}
                                 onChange={handleChange} isInvalid={touched.name && !!errors.name} />
                             <Feedback type="invalid">{errors.name}</Feedback>
                         </Form.Group>

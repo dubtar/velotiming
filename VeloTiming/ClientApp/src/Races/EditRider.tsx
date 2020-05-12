@@ -58,19 +58,19 @@ export default class EditRider extends React.Component<Props, typeof InitialStat
                             <Form.Row>
                                 <Form.Group as={Col} controlId="number" className="col-1">
                                     <Form.Label>Номер</Form.Label>
-                                    <Form.Control type="text" autoFocus value={values.number} name="number" maxLength={50}
+                                    <Form.Control type="text" autoFocus value={values.number || ''} name="number" maxLength={50}
                                         onChange={handleChange} isInvalid={touched.number && !!errors.number} />
                                     <Feedback type="invalid">{errors.number}</Feedback>
                                 </Form.Group>
                                 <Form.Group as={Col} controlId="lastName" className="col-2">
                                     <Form.Label>Фамилия</Form.Label>
-                                    <Form.Control type="text" value={values.lastName} name="lastName" maxLength={50}
+                                    <Form.Control type="text" value={values.lastName || ''} name="lastName" maxLength={50}
                                         onChange={handleChange} isInvalid={touched.lastName && !!errors.lastName} />
                                     <Feedback type="invalid">{errors.lastName}</Feedback>
                                 </Form.Group>
                                 <Form.Group as={Col} controlId="name" className="col-2">
                                     <Form.Label>Имя</Form.Label>
-                                    <Form.Control type="text" value={values.firstName} name="firstName" maxLength={50}
+                                    <Form.Control type="text" value={values.firstName || ''} name="firstName" maxLength={50}
                                         onChange={handleChange} isInvalid={touched.firstName && !!errors.firstName} />
                                     <Feedback type="invalid">{errors.firstName}</Feedback>
                                 </Form.Group>
@@ -116,13 +116,13 @@ export default class EditRider extends React.Component<Props, typeof InitialStat
                                 <Form.Group as={Col} controlId="city" className="col-1">
                                     <Form.Label>Город</Form.Label>
                                     <Form.Control type="text" maxLength={50} name="city" onChange={handleChange}
-                                        isInvalid={touched.city && !!errors.city} value={values.city} />
+                                        isInvalid={touched.city && !!errors.city} value={values.city || ''} />
                                     <Feedback type="invalid">{errors.city}</Feedback>
                                 </Form.Group>
                                 <Form.Group as={Col} controlId="team" className="col-2">
                                     <Form.Label>Команда</Form.Label>
                                     <Form.Control type="text" maxLength={50} name="team" onChange={handleChange}
-                                        isInvalid={touched.team && !!errors.team} value={values.team} />
+                                        isInvalid={touched.team && !!errors.team} value={values.team || ''} />
                                     <Feedback type="invalid">{errors.team}</Feedback>
                                 </Form.Group>
                             </Form.Row>
