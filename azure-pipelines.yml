@@ -32,3 +32,9 @@ steps:
   inputs:
     pathtoPublish: '$(Build.ArtifactStagingDirectory)' 
     artifactName: 'VeloTiming'
+
+- task: AzureWebApp@1
+  inputs:
+    azureSubscription: 'VeloTiming'
+    appName: 'VeloTiming'
+    package: $(Build.ArtifactStagingDirectory)/**/*.zip    
