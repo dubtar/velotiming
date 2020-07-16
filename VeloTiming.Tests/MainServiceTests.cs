@@ -80,7 +80,8 @@ namespace VeloTiming.Tests
             }, new System.Collections.Generic.Dictionary<string, string> {
                 { "1", "Пупкин Вася"},
                 { "2", "Иванов Петя"},
-                { "3", "Сюткин Павел"}
+                { "3", "Сюткин Павел"},
+                { "15", "Зюзин Архип"}
             }).Wait();
         }
 
