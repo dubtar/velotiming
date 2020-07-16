@@ -1,9 +1,10 @@
 import React from 'react'
-import { object as yupObject, string as yupString } from 'yup'
+import { object as yupObject, string as yupString, number as yupNumber } from 'yup'
 import { Formik } from 'formik';
 import { Form, Col, Button } from 'react-bootstrap'
 import Feedback from 'react-bootstrap/Feedback';
-import { StartDto, RaceCategoryDto } from '../clients';
+import { StartDto, RaceCategoryDto, IStartDto } from '../clients';
+import moment from 'moment';
 
 interface Props {
     start: StartDto
@@ -11,12 +12,15 @@ interface Props {
     onSubmit: (start?: StartDto) => void
 }
 
+
 const schema = yupObject({
     name: yupString().required('Как-нибудь хоть назови'),
-    plannedStart: yupString().nullable()
+    plannedStart: yupString().nullable(),
+    delayMarksAfterStartMinutes: yupNumber().integer('Должно быть число').positive('Нужно положительное число').required('Необходимо')
 })
 interface CategoryValues { [key: number]: boolean }
-type FormValues = Omit<StartDto & { categoryChecks: CategoryValues }, 'init' | 'toJSON'>
+type FormValues = Omit<Omit<IStartDto, "plannedStart">, "delayMarksAfterStartMinutes">
+    & { categoryChecks: CategoryValues, plannedStart: string, delayMarksAfterStartMinutes: string }
 
 const EditStart: React.SFC<Props> = (props) => {
     function onSubmit(values: FormValues) {
@@ -31,13 +35,23 @@ const EditStart: React.SFC<Props> = (props) => {
                 }
             }
         }
-        const result = new StartDto({ ...values, categories: cats })
+        let plannedStart: Date | undefined
+        if (values.plannedStart) {
+            plannedStart = moment(values.plannedStart, "hh:mm").toDate()
+        }
+        const delayMarksAfterStartMinutes = parseInt(values.delayMarksAfterStartMinutes, 10);
+        const result = new StartDto({ ...values, categories: cats, plannedStart, delayMarksAfterStartMinutes })
         props.onSubmit(result)
     }
 
     const catProps = {} as CategoryValues
     props.categories.forEach(cat => { catProps[cat.id] = props.start?.categories?.find(sc => sc.id === cat.id) !== undefined })
-    const formValues: FormValues = { ...props.start, categoryChecks: catProps }
+    const formValues: FormValues = {
+        ...props.start,
+        delayMarksAfterStartMinutes: props.start.delayMarksAfterStartMinutes.toString(),
+        categoryChecks: catProps,
+        plannedStart: props.start.plannedStart?.toLocaleTimeString() || ''
+    }
 
     function onReset() {
         props.onSubmit(undefined);
@@ -56,10 +70,18 @@ const EditStart: React.SFC<Props> = (props) => {
                         </Form.Group>
                         <Form.Group as={Col} controlId="plannedStart" className="col-2">
                             <Form.Label>Время старта</Form.Label>
-                            <Form.Control type="time" value={values.plannedStart?.toLocaleTimeString()}
+                            <Form.Control type="time" value={values.plannedStart}
                                 name="plannedStart"
                                 onChange={handleChange} isInvalid={touched.plannedStart && !!errors.plannedStart} />
                             <Feedback type="invalid">{errors.plannedStart}</Feedback>
+                        </Form.Group>
+                        <Form.Group as={Col} controlId="delayMarksAfterStartMinutes" className="col-1">
+                            <Form.Label title="Сколько минут не добавлять результаты после старта">Задержка</Form.Label>
+                            <Form.Control type="number" value={values.delayMarksAfterStartMinutes}
+                                name="delayMarksAfterStartMinutes"
+                                onChange={handleChange}
+                                isInvalid={!!errors.delayMarksAfterStartMinutes} />
+                            <Feedback type="invalid">{errors.delayMarksAfterStartMinutes}</Feedback>
                         </Form.Group>
                         <Form.Group as={Col} controlId="categories">
                             <Form.Label>Категории</Form.Label>

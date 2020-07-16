@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using VeloTiming.Controllers;
 
 namespace VeloTiming.Data
@@ -18,9 +19,12 @@ namespace VeloTiming.Data
         public int Lap { get; set; }
         public int Place { get; set; }
 
-        internal static Mark Create(ITimeService timeService)
+        [ForeignKey("Race")]
+        public int StartId {get; set; }
+        public virtual Start Start {get; set; }
+        internal static Mark Create(ITimeService timeService, int startId)
         {
-            return new Mark { CreatedOn = timeService.Now };
+            return new Mark { CreatedOn = timeService.Now, StartId = startId };
         }
     }
     public class MarkData

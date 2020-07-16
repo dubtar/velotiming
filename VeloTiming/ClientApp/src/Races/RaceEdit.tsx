@@ -13,9 +13,11 @@ const schema = yupObject({
     description: yupString().notRequired()
 })
 
+type Values = Pick<RaceDto, "id" | "description" | "name" | "type"> & { date: string }
+
 const InitialState = {
     raceId: 0,
-    race: null as RaceDto | null,
+    values: null as Values | null,
     sending: false,
     error: null as string | null
 }
@@ -25,23 +27,23 @@ type Props = RouteComponentProps<{ id?: string }>;
 export default class RaceEdit extends React.Component<Props, typeof InitialState> {
     constructor(props: Props) {
         super(props);
-        const state = { ...InitialState }
-        if (this.props.match.params.id) {
-            state.raceId = parseInt(this.props.match.params.id, 10)
-        }
-        else {
-            state.race = new RaceDto()
-            state.race.name = state.race.description = '' // to init default values with empty strings instead of undefined to make react happy
-        }
-        this.state = state;
+        this.state = InitialState;
         this.onSubmit = this.onSubmit.bind(this)
     }
 
     public async componentDidMount() {
         try {
-            if (this.state.raceId) {
-                const race = await new RacesClient().get(this.state.raceId)
-                this.setState({ race })
+            if (this.props.match.params.id) {
+                const raceId = parseInt(this.props.match.params.id, 10)
+                const race = await new RacesClient().get(raceId)
+                const values = {
+                    ...race , 
+                    date: moment(race.date).format('YYYY-MM-DD')
+                }
+                this.setState({ values })
+            } else {
+                const values = { name: '', description: '', date: moment().format('YYYY-MM-DD'), id: 0, type: RaceType.Laps }
+                this.setState({values});
             }
         }
         catch (ex) {
@@ -49,17 +51,18 @@ export default class RaceEdit extends React.Component<Props, typeof InitialState
         }
     }
 
-    public async onSubmit(values: RaceDto) {
+    public async onSubmit(values: Values) {
         this.setState({ sending: true });
-        if (values.date && typeof(values.date) === 'string') {
-            values.date = new Date(values.date);
-        }
         try {
+            const race = new RaceDto({
+                ...values,
+                date: moment.utc(values.date).toDate()
+            })
             if (values.id) {
-                await new RacesClient().updateRace(values)
+                await new RacesClient().updateRace(race)
             }
             else {
-                await new RacesClient().createRace(values)
+                await new RacesClient().createRace(race)
             }
             this.props.history.goBack();
         } catch (ex) {
@@ -70,17 +73,17 @@ export default class RaceEdit extends React.Component<Props, typeof InitialState
     public render() {
         return (
             <Row><Col>
-                {!this.state.race && !this.state.error && <Spinner animation="grow" />}
+                {!this.state.values && !this.state.error && <Spinner animation="grow" />}
                 {this.state.error && <Alert className="mt-3" variant="danger">{this.state.error}</Alert>}
-                {this.state.race && (<>
-                    <h1>{this.state.race.id ? this.state.race.name : 'Новая гонка'}</h1>
-                    <Formik initialValues={this.state.race} validationSchema={schema} onSubmit={this.onSubmit}>
+                {this.state.values && (<>
+                    <h1>{this.state.values.id ? this.state.values.name : 'Новая гонка'}</h1>
+                    <Formik initialValues={this.state.values} validationSchema={schema} onSubmit={this.onSubmit}>
                         {({ values, touched, errors, handleSubmit, handleChange }) => (
                             <Form noValidate onSubmit={handleSubmit}>
                                 <Form.Group controlId="date">
                                     <Form.Label>Дата</Form.Label>
                                     <Form.Control required type="date" placeholder="Дата гонки" name="date"
-                                        value={moment(values.date).format('YYYY-MM-DD')} onChange={handleChange}
+                                        value={values.date} onChange={handleChange}
                                         isInvalid={touched.date && !!errors.date} isValid={touched.date && !errors.date}
                                     />
                                     <Form.Control.Feedback type="invalid">{errors.date}</Form.Control.Feedback>

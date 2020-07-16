@@ -2,14 +2,16 @@ import React, { Component } from "react";
 import { Route, Router, Redirect, Link } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.css";
 import { Navbar, Container, Nav, Button } from "react-bootstrap";
-import Timing from "./Timing/Timing";
 import moment from "moment";
 import "moment/locale/ru";
-import Races from "./Races/Races";
 import { createBrowserHistory } from "history";
-import Numbers from "./Numbers/Numbers";
-import Svc, { RaceInfo } from './svc'
 import { Subscription } from "rxjs";
+
+import Svc, { RaceInfo } from './svc'
+
+import Numbers from "./Numbers/Numbers";
+import Timing from "./Timing/Timing";
+import Races from "./Races/Races";
 
 moment.locale("ru");
 

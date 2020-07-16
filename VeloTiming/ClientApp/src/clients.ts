@@ -1055,6 +1055,43 @@ export class StartClient {
         }
         return Promise.resolve<StartDto[]>(<any>null);
     }
+
+    getResults(id: number): Promise<StartResultsDto> {
+        let url_ = this.baseUrl + "/api/races/start/results/{id}";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetResults(_response);
+        });
+    }
+
+    protected processGetResults(response: Response): Promise<StartResultsDto> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = StartResultsDto.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<StartResultsDto>(<any>null);
+    }
 }
 
 export class CurrentRaceDto implements ICurrentRaceDto {
@@ -1418,6 +1455,7 @@ export class StartDto implements IStartDto {
     realStart!: Date | undefined;
     end!: Date | undefined;
     categories!: RaceCategoryDto[] | undefined;
+    delayMarksAfterStartMinutes!: number;
 
     constructor(data?: IStartDto) {
         if (data) {
@@ -1440,6 +1478,7 @@ export class StartDto implements IStartDto {
                 for (let item of _data["categories"])
                     this.categories!.push(RaceCategoryDto.fromJS(item));
             }
+            this.delayMarksAfterStartMinutes = _data["delayMarksAfterStartMinutes"];
         }
     }
 
@@ -1462,6 +1501,7 @@ export class StartDto implements IStartDto {
             for (let item of this.categories)
                 data["categories"].push(item.toJSON());
         }
+        data["delayMarksAfterStartMinutes"] = this.delayMarksAfterStartMinutes;
         return data; 
     }
 }
@@ -1473,6 +1513,59 @@ export interface IStartDto {
     realStart: Date | undefined;
     end: Date | undefined;
     categories: RaceCategoryDto[] | undefined;
+    delayMarksAfterStartMinutes: number;
+}
+
+export class StartResultsDto implements IStartResultsDto {
+    race!: RaceDto | undefined;
+    start!: StartDto | undefined;
+    results!: MarkDto[] | undefined;
+
+    constructor(data?: IStartResultsDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.race = _data["race"] ? RaceDto.fromJS(_data["race"]) : <any>undefined;
+            this.start = _data["start"] ? StartDto.fromJS(_data["start"]) : <any>undefined;
+            if (Array.isArray(_data["results"])) {
+                this.results = [] as any;
+                for (let item of _data["results"])
+                    this.results!.push(MarkDto.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): StartResultsDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new StartResultsDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["race"] = this.race ? this.race.toJSON() : <any>undefined;
+        data["start"] = this.start ? this.start.toJSON() : <any>undefined;
+        if (Array.isArray(this.results)) {
+            data["results"] = [];
+            for (let item of this.results)
+                data["results"].push(item.toJSON());
+        }
+        return data; 
+    }
+}
+
+export interface IStartResultsDto {
+    race: RaceDto | undefined;
+    start: StartDto | undefined;
+    results: MarkDto[] | undefined;
 }
 
 export class ApiException extends Error {

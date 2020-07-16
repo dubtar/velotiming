@@ -103,23 +103,26 @@ namespace VeloTiming.Controllers
         public ActionResult<MarkDto[]> GetMarks()
         {
             return Ok(mainService.GetMarks().Select(m => new
-            MarkDto
-            {
-                Id = m.Id,
-                CreatedOn = m.CreatedOn,
-                Time = m.Time,
-                Number = m.Number,
-                Name = m.Name,
-                TimeSource = m.TimeSource,
-                NumberSource = m.NumberSource,
-                Lap = m.Lap,
-                Place = m.Place
-            }));
+            MarkDto(m)
+            ));
         }
     }
 
     public class MarkDto
     {
+        public MarkDto(Mark m)
+        {
+            Id = m.Id;
+            CreatedOn = m.CreatedOn;
+            Time = m.Time;
+            Number = m.Number;
+            Name = m.Name;
+            TimeSource = m.TimeSource;
+            NumberSource = m.NumberSource;
+            Lap = m.Lap;
+            Place = m.Place;
+        }
+
         public string Id { get; set; }
         public DateTime CreatedOn { get; set; }
         public DateTime? Time { get; set; }

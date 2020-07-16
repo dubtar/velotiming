@@ -3,6 +3,7 @@ import { Table, Row, Col, Alert, Spinner, Button, ButtonGroup } from "react-boot
 import EditStart from "./EditStart";
 import { Redirect } from "react-router";
 import { MainClient, StartClient, StartDto, RaceCategoryDto, RaceCategoryClient } from '../clients'
+import { Link } from "react-router-dom";
 
 const InitialState = {
     starts: null as StartDto[] | null,
@@ -42,7 +43,7 @@ export default class StartsList extends React.Component<Props, typeof InitialSta
                     <>
                         <Table striped hover bordered>
                             <thead><tr>
-                                <th>Название</th>
+                                <th>Заезд</th>
                                 <th>Старт</th>
                                 <th>Категории</th>
                                 <th />
@@ -57,7 +58,8 @@ export default class StartsList extends React.Component<Props, typeof InitialSta
                                             <ButtonGroup>
                                                 {start.realStart == null &&
                                                     <Button variant="success" onClick={this.start.bind(this, start.id!)}>Начать</Button>
-                                                }
+                                                    ||
+                                                    <Link className="btn btn-outline-success" to={`results/${start.id}`}>Результаты</Link>}
                                                 <Button variant="outline-primary" onClick={this.editStart.bind(this, start)}>Изменить</Button>
                                                 <Button variant="outline-danger" onClick={this.deleteStart.bind(this, start.id!)}>Удалить</Button>
                                             </ButtonGroup>
@@ -68,7 +70,7 @@ export default class StartsList extends React.Component<Props, typeof InitialSta
                         </Table>
                         {this.state.editStart !== null && this.state.categories &&
                             <EditStart start={this.state.editStart} categories={this.state.categories} onSubmit={this.saveStart} />}
-                        {this.state.editStart === null && <Button className="mv-3" onClick={this.addStart}>Добавить заезд</Button>}
+                        {this.state.editStart === null && <Button className="mv-3 float-right" onClick={this.addStart}>Добавить заезд</Button>}
                     </>
                 )}
             </Col></Row>
@@ -77,10 +79,12 @@ export default class StartsList extends React.Component<Props, typeof InitialSta
 
     private addStart() {
         new RaceCategoryClient().get(this.props.raceId).then(categories => {
-            this.setState({
+            const newState = {
                 categories,
                 editStart: new StartDto()
-            })
+            };
+            newState.editStart.delayMarksAfterStartMinutes = 1
+            this.setState(newState)
         }, error => { this.setState({ error }) });
     }
 
@@ -118,7 +122,6 @@ export default class StartsList extends React.Component<Props, typeof InitialSta
         try {
             if (start) {
                 let starts;
-                // this.updatePlannedStartTime(start);
                 if (start.id) {// edit exiting
                     starts = await new StartClient().update(start);
                 } else {

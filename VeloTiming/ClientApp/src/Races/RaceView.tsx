@@ -32,20 +32,18 @@ export default class RaceView extends React.Component<Props, typeof InitialState
 
     public render() {
         if (this.state.error) return <Alert variant="danger">{this.state.error}</Alert>
-        if (!this.state.race) return <Spinner animation="grow"/>
+        if (!this.state.race) return <Spinner animation="grow" />
         return (
             <Row><Col>
                 <h1>{this.state.race.name} <small>{this.state.race.date && this.state.race.date?.toLocaleDateString('ru')}</small></h1>
                 <p className="lead">{this.state.race.description}</p>
-                <Tabs id="raceTabs">
+                <StartsList raceId={this.state.raceId} raceDate={this.state.race.date} />
+                <Tabs id="raceTabs" className="mt-3">
                     <Tab eventKey="categories" title="Категории">
                         <CategoryList raceId={this.state.raceId} />
                     </Tab>
                     <Tab eventKey="riders" title="Участники">
                         <RidersList raceId={this.state.raceId} />
-                    </Tab>
-                    <Tab eventKey="starts" title="Заезды">
-                        <StartsList raceId={this.state.raceId} raceDate={this.state.race.date} />
                     </Tab>
                 </Tabs>
             </Col></Row>

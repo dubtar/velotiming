@@ -16,6 +16,7 @@ namespace VeloTiming.Data
         public virtual Race Race { get; set; }
         public virtual ICollection<StartCategory> Categories { get; set; }
         public bool IsActive { get; set; }
+        public int DelayMarksAfterStartMinutes { get; set;}
     }
 
     public class StartCategory 

@@ -131,16 +131,28 @@ namespace VeloTiming
                                 var data = JsonSerializer.Deserialize<RfidData>(message);
                                 if (data != null && !string.IsNullOrEmpty(data.RFIDStamp))
                                 {
+                                    // utc offset
+                                    var offset = TimeZoneInfo.Local.BaseUtcOffset;
                                     // parse times
                                     DateTime? time = null;
                                     const string TIME_FORMAT = "HH:mm:ss.fff";
                                     if (!string.IsNullOrWhiteSpace(data.MeanRead) &&
                                         DateTime.TryParseExact(data.MeanRead, TIME_FORMAT, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var meanTime)) {
-                                            time = DateTime.Now.Date.AddHours(meanTime.Hour).AddMinutes(meanTime.Minute).AddSeconds(meanTime.Second).AddMilliseconds(meanTime.Millisecond);
+                                            time = DateTime.Now.Date
+                                                .AddHours(meanTime.Hour)
+                                                .AddMinutes(meanTime.Minute)
+                                                .AddSeconds(meanTime.Second)
+                                                .AddMilliseconds(meanTime.Millisecond)
+                                                .Add(offset);
                                     }
                                     else if (!string.IsNullOrWhiteSpace(data.FirstRead) &&
-                                        DateTime.TryParseExact(data.MeanRead, TIME_FORMAT, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var firstTime)) {
-                                            time = DateTime.Now.Date.AddHours(firstTime.Hour).AddMinutes(firstTime.Minute).AddSeconds(firstTime.Second).AddMilliseconds(firstTime.Millisecond);
+                                        DateTime.TryParseExact(data.FirstRead, TIME_FORMAT, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var firstTime)) {
+                                            time = DateTime.Now.Date
+                                                .AddHours(firstTime.Hour)
+                                                .AddMinutes(firstTime.Minute)
+                                                .AddSeconds(firstTime.Second)
+                                                .AddMilliseconds(firstTime.Millisecond)
+                                                .Add(offset);
                                     }
                                     if (time == null)
                                         time = DateTime.Now;

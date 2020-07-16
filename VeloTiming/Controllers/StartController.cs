@@ -65,6 +65,20 @@ namespace VeloTiming.Controllers
             await dataContext.SaveChangesAsync();
             return await Get(raceId);
         }
+
+        [HttpGet("results/{id}")]
+        public async Task<ActionResult<StartResultsDto>> GetResults(int id){
+            var start = await dataContext.Starts.Include(s => s.Race).FirstOrDefaultAsync(s => s.Id == id);
+            if (start == null) return NotFound();
+
+            var marks = await dataContext.Results.Where(r => r.StartId == id).ToListAsync();
+            var result = new StartResultsDto {
+                Race = new RaceDto(start.Race),
+                Start = new StartDto(start),
+                Results = marks.Select(m => new MarkDto(m)).ToArray()
+            }; 
+            return Ok(result);
+        }
     }
 
     public class StartDto
@@ -78,6 +92,7 @@ namespace VeloTiming.Controllers
             this.RealStart = start.RealStart;
             this.End = start.End;
             this.Categories = start.Categories?.Select(c => new RaceCategoryDto(c.Category)).ToArray() ?? new RaceCategoryDto[0];
+            this.DelayMarksAfterStartMinutes = start.DelayMarksAfterStartMinutes; 
         }
 
         internal Start UpdateEntity(Start start, DataContext dataContext)
@@ -87,6 +102,7 @@ namespace VeloTiming.Controllers
             start.PlannedStart = PlannedStart;
             start.RealStart = RealStart;
             start.End = End;
+            start.DelayMarksAfterStartMinutes = DelayMarksAfterStartMinutes;
             #region update Categories list
             if (start.Categories == null)
                 start.Categories = new List<StartCategory>();
@@ -109,5 +125,13 @@ namespace VeloTiming.Controllers
         public DateTime? RealStart { get; set; }
         public DateTime? End { get; set; }
         public RaceCategoryDto[] Categories { get; set; } = new RaceCategoryDto[0];
+        public int DelayMarksAfterStartMinutes { get; set; }
+    }
+
+    public class StartResultsDto
+    {
+        public RaceDto Race {get; set;}
+        public StartDto Start {get; set;}
+        public MarkDto[] Results {get; set;}
     }
 }

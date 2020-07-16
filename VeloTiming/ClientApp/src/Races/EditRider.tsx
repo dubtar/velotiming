@@ -37,7 +37,10 @@ export default class EditRider extends React.Component<Props, typeof InitialStat
         })
         this.sRconn = new signalR.HubConnectionBuilder().withUrl('/rfidHub').build();
         this.sRconn.on("NumberFound", (rfidNumber: string) => {
-            this.setState({ rfidNumber });
+            if (!this.props.rider.number) {
+                this.props.rider.number = rfidNumber
+                this.setState({rfidNumber});
+            }
         })
         this.sRconn.start();
     }
@@ -52,7 +55,9 @@ export default class EditRider extends React.Component<Props, typeof InitialStat
         else {
             return (
                 <Formik validationSchema={schema} onSubmit={this.props.onSubmit} initialValues={this.props.rider}
-                    onReset={this.props.onSubmit.bind(this, undefined)}>
+                    onReset={this.props.onSubmit.bind(this, undefined)}
+                    enableReinitialize={true}
+                    >
                     {({ handleSubmit, handleChange, handleReset, values, touched, errors, setFieldValue }) => (
                         <Form noValidate onSubmit={handleSubmit} onReset={handleReset} className="bg-light p-3">
                             <Form.Row>

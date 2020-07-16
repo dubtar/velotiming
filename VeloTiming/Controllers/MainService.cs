@@ -57,7 +57,6 @@ namespace VeloTiming.Controllers
                 {
                     using (var dataContext = services.GetRequiredService<DataContext>())
                     {
-
                         var activeStart = await dataContext.Starts.Include(s => s.Race).FirstOrDefaultAsync(s => s.IsActive);
                         if (activeStart != null)
                         {
@@ -65,7 +64,7 @@ namespace VeloTiming.Controllers
                             Race = new RaceInfo(activeStart, riders);
                             // Load Marks
                             Results.Clear();
-                            Results.AddRange(dataContext.Results);
+                            Results.AddRange(dataContext.Results.Where(r => r.StartId == activeStart.Id));
                         }
                     }
                 }
@@ -90,31 +89,40 @@ namespace VeloTiming.Controllers
 
         public IEnumerable<Mark> GetMarks()
         {
-            IEnumerable<Mark> result = Results?.AsReadOnly();
+            IEnumerable<Mark> result = Results?.ToArray();
             if (result == null) result = new Mark[0];
             return result;
         }
 
+        private bool RaceIsRunning() {
+            return Race != null && Race.Start != null;
+        }
+
         public void AddTime(DateTime time, string source)
         {
-            time = time.ToLocalTime();
-            taskQueue.QueueBackgroundWorkItem((token) =>
-               ProcessAddMark(time, null, source, token)
-            );
+            if (RaceIsRunning())
+            {
+                time = time.ToLocalTime();
+                taskQueue.QueueBackgroundWorkItem((token) =>
+                   ProcessAddMark(time, null, source, token)
+                );
+            }
         }
 
         public void AddNumber(string number, string source)
         {
-            taskQueue.QueueBackgroundWorkItem((token) =>
-               ProcessAddMark(null, number, source, token)
-            );
+            if (RaceIsRunning())
+                taskQueue.QueueBackgroundWorkItem((token) =>
+                   ProcessAddMark(null, number, source, token)
+                );
         }
 
         public void AddNumberAndTime(string number, DateTime time, string source)
         {
-            taskQueue.QueueBackgroundWorkItem((token) =>
-                ProcessAddMark(time, number, source, token)
-            );
+            if (RaceIsRunning())
+                taskQueue.QueueBackgroundWorkItem((token) =>
+                    ProcessAddMark(time, number, source, token)
+                );
         }
 
         public void UpdateMark(Mark mark)
@@ -155,7 +163,18 @@ namespace VeloTiming.Controllers
         const int MARKS_MERGE_SECONDS = 30;
         private Task ProcessAddMark(DateTime? time, string number, string source, System.Threading.CancellationToken token)
         {
+            string riderName = null;
+            if (!string.IsNullOrEmpty(number) && !Race.Numbers.TryGetValue(number, out riderName)) 
+            {
+                // Number is not in race numbers - ignore mark
+                return Task.CompletedTask;
+            }
+
             DateTime markTime = time ?? timeService.Now;
+            // Do not add mark if less minute from start than delay
+            if (time.HasValue && Race.Start.HasValue && (time.Value - Race.Start.Value).TotalMinutes < Race.DelayMarksAfterStartMinutes)
+                return Task.CompletedTask;
+
             Task task = null;
             lock (Results)
             {
@@ -173,7 +192,7 @@ namespace VeloTiming.Controllers
                     result = nearbyResults.FirstOrDefault(r => !r.Time.HasValue);
                     if (result == null)
                     {
-                        Results.Add(result = Mark.Create(timeService)); // add new time withough
+                        Results.Add(result = Mark.Create(timeService, Race.StartId)); // add new time withough
                         added = true;
                     }
                     result.Time = time;
@@ -186,7 +205,7 @@ namespace VeloTiming.Controllers
                     result = nearbyResults.FirstOrDefault(r => string.IsNullOrWhiteSpace(r.Number));
                     if (result == null)
                     {
-                        Results.Add(result = Mark.Create(timeService));
+                        Results.Add(result = Mark.Create(timeService, Race.StartId));
                         reorder = added = true;
                     }
                     result.Number = number;
@@ -198,11 +217,15 @@ namespace VeloTiming.Controllers
                     result = nearbyResults.FirstOrDefault(r => r.Number == number);
                     if (result == null)
                     {
-                        result = Mark.Create(timeService);
+                        result = Mark.Create(timeService, Race.StartId);
                         result.Number = number;
                         result.NumberSource = source;
                         Results.Add(result);
                         reorder = added = true;
+                    }
+                    else 
+                    {
+                        riderName = result.Name;
                     }
                     // TODO: update time based on source priority
                     result.Time = time;
@@ -211,10 +234,7 @@ namespace VeloTiming.Controllers
 
                 if (result != null)
                 {
-                    if (string.IsNullOrWhiteSpace(result.Number) || !Race.Numbers.TryGetValue(result.Number, out var rider))
-                        result.Name = null;
-                    else
-                        result.Name = rider;
+                    result.Name = riderName;
                     result.Data.Add(new MarkData
                     {
                         CreatedOn = timeService.Now,
@@ -304,12 +324,14 @@ public class RaceInfo
         RaceName = start.Race.Name;
         StartName = start.Name;
         Start = start.RealStart;
+        DelayMarksAfterStartMinutes = start.DelayMarksAfterStartMinutes; 
         Numbers = new ReadOnlyDictionary<string, string>(numbers);
     }
 
-    public int StartId { get; set; }
-    public string RaceName { get; set; }
-    public string StartName { get; set; }
+    public int StartId { get; }
+    public string RaceName { get; }
+    public string StartName { get; }
     public DateTime? Start { get; set; }
+    public int DelayMarksAfterStartMinutes { get; }
     public ReadOnlyDictionary<string, string> Numbers { get; private set; }
 }
