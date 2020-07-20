@@ -7,8 +7,9 @@ using VeloTiming.Data;
 
 namespace VeloTiming.Controllers
 {
+    [ApiController]
     [Route("api/races")]
-    public class RacesController : Controller
+    public class RacesController : ControllerBase
     {
         private readonly DataContext dataContext;
 

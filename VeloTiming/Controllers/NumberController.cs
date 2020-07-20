@@ -1,15 +1,14 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using VeloTiming.Data;
 using VeloTiming.Services;
 
 namespace VeloTiming.Controllers
 {
+    [ApiController]
     [Route("api/number")]
-    public class NumberController : Controller
+    public class NumberController : ControllerBase
     {
         private readonly INumberService numberService;
 

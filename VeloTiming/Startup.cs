@@ -30,6 +30,9 @@ namespace VeloTiming
             //     services.AddDbContext<Data.DataContext>(options => options.UseMySQL(Configuration.GetConnectionString("MYSQLCONNSTR_localdb"))
             //         .UseLazyLoadingProxies());
             // else
+
+            services.AddControllersWithViews();
+
             services.AddDbContextPool<Data.DataContext>(options =>
                 options.UseSqlite(Configuration.GetConnectionString("Sqlite"))
                 .UseLazyLoadingProxies()

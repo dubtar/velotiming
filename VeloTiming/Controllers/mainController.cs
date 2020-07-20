@@ -8,8 +8,9 @@ using VeloTiming.Services;
 
 namespace VeloTiming.Controllers
 {
+    [ApiController]
     [Route("api")]
-    public class MainController : Controller
+    public class MainController : ControllerBase
     {
         private readonly IMainService mainService;
         private readonly DataContext dataContext;
