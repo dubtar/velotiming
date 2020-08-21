@@ -13,7 +13,6 @@ namespace VeloTiming.Data
         public string Name { get; set; }
         public string Description { get; set; }
         public DateTime Date { get; set; }
-        public RaceType Type { get; set; }
         public virtual ICollection<Entry> Entries { get; set; }
         public virtual ICollection<RaceCategory> Categories { get; set; }
         public virtual ICollection<Rider> Riders { get; set; }
@@ -21,16 +20,6 @@ namespace VeloTiming.Data
         public virtual ICollection<Start> Starts { get; set; }
 
         public virtual ICollection<RaceNumber> RaceNumbers { get; set; }
-    }
-
-    [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum RaceType
-    {
-        [Description("Групповая кругами")]
-        Laps = 1,
-        [Description("Разделка")]
-        TimeTrial = 2
-        // Criterium
     }
 
     public class RaceNumber 

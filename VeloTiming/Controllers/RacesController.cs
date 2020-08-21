@@ -76,14 +76,12 @@ namespace VeloTiming.Controllers
             Name = race.Name;
             Description = race.Description;
             Date = race.Date;
-            Type = race.Type;
         }
         public Race UpdateEntity(Race race)
         {
             race.Name = Name;
             race.Description = Description;
             race.Date = Date;
-            race.Type = Type;
             return race;
         }
         private void Validate()
@@ -108,6 +106,5 @@ namespace VeloTiming.Controllers
         public string Name { get; set; }
         public string Description { get; set; }
         public DateTime Date { get; set; }
-        public RaceType Type { get; set; }
     }
 }

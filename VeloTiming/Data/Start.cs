@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace VeloTiming.Data
 {
@@ -16,10 +18,22 @@ namespace VeloTiming.Data
         public virtual Race Race { get; set; }
         public virtual ICollection<StartCategory> Categories { get; set; }
         public bool IsActive { get; set; }
-        public int DelayMarksAfterStartMinutes { get; set;}
+        public int DelayMarksAfterStartMinutes { get; set; }
+        public StartType Type { get; set; }
     }
 
-    public class StartCategory 
+
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public enum StartType
+    {
+        [Description("Групповая кругами")]
+        Laps = 1,
+        [Description("Разделка")]
+        TimeTrial = 2
+        // Criterium
+    }
+
+    public class StartCategory
     {
         public int Id { get; set; }
         public virtual RaceCategory Category { get; set; }

@@ -1,6 +1,6 @@
 import React from "react";
 import { Table, Row, Col, Alert, Spinner, Button, ButtonGroup } from "react-bootstrap";
-import EditStart from "./EditStart";
+import StartEdit from "./StartEdit";
 import { Redirect } from "react-router";
 import { MainClient, StartClient, StartDto, RaceCategoryDto, RaceCategoryClient } from '../clients'
 import { Link } from "react-router-dom";
@@ -69,7 +69,7 @@ export default class StartsList extends React.Component<Props, typeof InitialSta
                             </tbody>
                         </Table>
                         {this.state.editStart !== null && this.state.categories &&
-                            <EditStart start={this.state.editStart} categories={this.state.categories} onSubmit={this.saveStart} />}
+                            <StartEdit start={this.state.editStart} categories={this.state.categories} onSubmit={this.saveStart} />}
                         {this.state.editStart === null && <Button className="mv-3 float-right" onClick={this.addStart}>Добавить заезд</Button>}
                     </>
                 )}

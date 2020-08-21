@@ -3,7 +3,7 @@ import { object as yupObject, string as yupString, number as yupNumber } from 'y
 import { Formik } from 'formik';
 import { Form, Col, Button } from 'react-bootstrap'
 import Feedback from 'react-bootstrap/Feedback';
-import { StartDto, RaceCategoryDto, IStartDto } from '../clients';
+import { StartDto, RaceCategoryDto, IStartDto, StartType } from '../clients';
 import moment from 'moment';
 
 interface Props {
@@ -22,7 +22,7 @@ interface CategoryValues { [key: number]: boolean }
 type FormValues = Omit<Omit<IStartDto, "plannedStart">, "delayMarksAfterStartMinutes">
     & { categoryChecks: CategoryValues, plannedStart: string, delayMarksAfterStartMinutes: string }
 
-const EditStart: React.SFC<Props> = (props) => {
+const StartEdit: React.SFC<Props> = (props) => {
     function onSubmit(values: FormValues) {
         const cats: RaceCategoryDto[] = []
         for (const key in values.categoryChecks) {
@@ -83,6 +83,29 @@ const EditStart: React.SFC<Props> = (props) => {
                                 isInvalid={!!errors.delayMarksAfterStartMinutes} />
                             <Feedback type="invalid">{errors.delayMarksAfterStartMinutes}</Feedback>
                         </Form.Group>
+                        <Form.Group controlId="type">
+                            <Form.Label>Тип</Form.Label>
+                            <Form.Check type="radio"
+                                checked={values.type + '' === StartType.Laps + ''}
+                                value={StartType.Laps}
+                                name="type"
+                                label="Групповая гонка"
+                                onChange={handleChange}
+                                isInvalid={!!errors.type}
+                                id="typeLaps"
+                            />
+                            <Form.Check type="radio"
+                                checked={values.type + '' === StartType.TimeTrial + ''}
+                                value={StartType.TimeTrial}
+                                name="type"
+                                label="Раздельный старт"
+                                feedback={errors.type}
+                                onChange={handleChange}
+                                isInvalid={!!errors.type}
+                                id="typeTT"
+                            />
+                            <Form.Control.Feedback type="invalid">{errors.type}</Form.Control.Feedback>
+                        </Form.Group>
                         <Form.Group as={Col} controlId="categories">
                             <Form.Label>Категории</Form.Label>
                             <Form.Row>
@@ -104,4 +127,4 @@ const EditStart: React.SFC<Props> = (props) => {
     )
 }
 
-export default EditStart
+export default StartEdit

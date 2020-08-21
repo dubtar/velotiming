@@ -94,7 +94,8 @@ namespace VeloTiming.Controllers
             return result;
         }
 
-        private bool RaceIsRunning() {
+        private bool RaceIsRunning()
+        {
             return Race != null && Race.Start != null;
         }
 
@@ -164,7 +165,7 @@ namespace VeloTiming.Controllers
         private Task ProcessAddMark(DateTime? time, string number, string source, System.Threading.CancellationToken token)
         {
             string riderName = null;
-            if (!string.IsNullOrEmpty(number) && !Race.Numbers.TryGetValue(number, out riderName)) 
+            if (!string.IsNullOrEmpty(number) && !Race.Numbers.TryGetValue(number, out riderName))
             {
                 // Number is not in race numbers - ignore mark
                 return Task.CompletedTask;
@@ -223,7 +224,7 @@ namespace VeloTiming.Controllers
                         Results.Add(result);
                         reorder = added = true;
                     }
-                    else 
+                    else
                     {
                         riderName = result.Name;
                     }
@@ -324,8 +325,9 @@ public class RaceInfo
         RaceName = start.Race.Name;
         StartName = start.Name;
         Start = start.RealStart;
-        DelayMarksAfterStartMinutes = start.DelayMarksAfterStartMinutes; 
+        DelayMarksAfterStartMinutes = start.DelayMarksAfterStartMinutes;
         Numbers = new ReadOnlyDictionary<string, string>(numbers);
+        Type = start.Type;
     }
 
     public int StartId { get; }
@@ -334,4 +336,5 @@ public class RaceInfo
     public DateTime? Start { get; set; }
     public int DelayMarksAfterStartMinutes { get; }
     public ReadOnlyDictionary<string, string> Numbers { get; private set; }
+    public StartType Type { get; set; }
 }

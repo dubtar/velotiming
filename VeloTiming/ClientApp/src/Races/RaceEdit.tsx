@@ -3,7 +3,7 @@ import React from "react";
 import { Form, Button, Alert, Row, Spinner, Col } from "react-bootstrap";
 import { object as yupObject, string as yupString, date as yupDate } from 'yup'
 import { Formik } from 'formik'
-import { RaceDto, RacesClient, RaceType } from "../clients";
+import { RaceDto, RacesClient  } from "../clients";
 import moment from "moment";
 
 
@@ -13,7 +13,7 @@ const schema = yupObject({
     description: yupString().notRequired()
 })
 
-type Values = Pick<RaceDto, "id" | "description" | "name" | "type"> & { date: string }
+type Values = Pick<RaceDto, "id" | "description" | "name"> & { date: string }
 
 const InitialState = {
     raceId: 0,
@@ -42,7 +42,7 @@ export default class RaceEdit extends React.Component<Props, typeof InitialState
                 }
                 this.setState({ values })
             } else {
-                const values = { name: '', description: '', date: moment().format('YYYY-MM-DD'), id: 0, type: RaceType.Laps }
+                const values = { name: '', description: '', date: moment().format('YYYY-MM-DD'), id: 0 }
                 this.setState({values});
             }
         }
@@ -96,29 +96,6 @@ export default class RaceEdit extends React.Component<Props, typeof InitialState
                                         isInvalid={touched.name && !!errors.name}
                                     />
                                     <Form.Control.Feedback type="invalid">{errors.name}</Form.Control.Feedback>
-                                </Form.Group>
-                                <Form.Group controlId="type">
-                                    <Form.Label>Тип</Form.Label>
-                                    <Form.Check type="radio"
-                                        checked={values.type + '' === RaceType.Laps + ''}
-                                        value={RaceType.Laps}
-                                        name="type"
-                                        label="Групповая гонка"
-                                        onChange={handleChange}
-                                        isInvalid={!!errors.type}
-                                        id="typeLaps"
-                                    />
-                                    <Form.Check type="radio"
-                                        checked={values.type + '' === RaceType.TimeTrial + ''}
-                                        value={RaceType.TimeTrial}
-                                        name="type"
-                                        label="Раздельный старт"
-                                        feedback={errors.type}
-                                        onChange={handleChange}
-                                        isInvalid={!!errors.type}
-                                        id="typeTT"
-                                    />
-                                    <Form.Control.Feedback type="invalid">{errors.type}</Form.Control.Feedback>
                                 </Form.Group>
                                 <Form.Group controlId="description">
                                     <Form.Label>Описание</Form.Label>

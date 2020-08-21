@@ -94,6 +94,7 @@ namespace VeloTiming.Controllers
             this.End = start.End;
             this.Categories = start.Categories?.Select(c => new RaceCategoryDto(c.Category)).ToArray() ?? new RaceCategoryDto[0];
             this.DelayMarksAfterStartMinutes = start.DelayMarksAfterStartMinutes; 
+            this.Type = start.Type;
         }
 
         internal Start UpdateEntity(Start start, DataContext dataContext)
@@ -104,6 +105,7 @@ namespace VeloTiming.Controllers
             start.RealStart = RealStart;
             start.End = End;
             start.DelayMarksAfterStartMinutes = DelayMarksAfterStartMinutes;
+            start.Type = Type;
             #region update Categories list
             if (start.Categories == null)
                 start.Categories = new List<StartCategory>();
@@ -127,6 +129,7 @@ namespace VeloTiming.Controllers
         public DateTime? End { get; set; }
         public RaceCategoryDto[] Categories { get; set; } = new RaceCategoryDto[0];
         public int DelayMarksAfterStartMinutes { get; set; }
+        public StartType Type { get;  set; }
     }
 
     public class StartResultsDto
