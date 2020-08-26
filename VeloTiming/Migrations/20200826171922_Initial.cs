@@ -1,12 +1,24 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace veloTiming.Migrations
+namespace Velotiming.Migrations
 {
     public partial class Initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "Numbers",
+                columns: table => new
+                {
+                    Id = table.Column<string>(nullable: false),
+                    NumberRfids = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Numbers", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "Races",
                 columns: table => new
@@ -15,8 +27,7 @@ namespace veloTiming.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     Name = table.Column<string>(nullable: true),
                     Description = table.Column<string>(nullable: true),
-                    Date = table.Column<DateTime>(nullable: false),
-                    Type = table.Column<int>(nullable: false)
+                    Date = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -48,6 +59,33 @@ namespace veloTiming.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "RaceNumber",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    NumberId = table.Column<string>(nullable: true),
+                    IsReturned = table.Column<bool>(nullable: false),
+                    RaceId = table.Column<int>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RaceNumber", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_RaceNumber_Numbers_NumberId",
+                        column: x => x.NumberId,
+                        principalTable: "Numbers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_RaceNumber_Races_RaceId",
+                        column: x => x.RaceId,
+                        principalTable: "Races",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Starts",
                 columns: table => new
                 {
@@ -57,7 +95,10 @@ namespace veloTiming.Migrations
                     PlannedStart = table.Column<DateTime>(nullable: true),
                     RealStart = table.Column<DateTime>(nullable: true),
                     End = table.Column<DateTime>(nullable: true),
-                    RaceId = table.Column<int>(nullable: false)
+                    RaceId = table.Column<int>(nullable: false),
+                    IsActive = table.Column<bool>(nullable: false),
+                    DelayMarksAfterStartMinutes = table.Column<int>(nullable: false),
+                    Type = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -109,7 +150,6 @@ namespace veloTiming.Migrations
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Number = table.Column<string>(nullable: true),
                     FirstName = table.Column<string>(nullable: true),
                     LastName = table.Column<string>(nullable: true),
                     Sex = table.Column<int>(nullable: false),
@@ -117,7 +157,8 @@ namespace veloTiming.Migrations
                     City = table.Column<string>(nullable: true),
                     Team = table.Column<string>(nullable: true),
                     CategoryId = table.Column<int>(nullable: true),
-                    RaceId = table.Column<int>(nullable: false)
+                    RaceId = table.Column<int>(nullable: false),
+                    NumberId = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -129,9 +170,43 @@ namespace veloTiming.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
+                        name: "FK_Riders_Numbers_NumberId",
+                        column: x => x.NumberId,
+                        principalTable: "Numbers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
                         name: "FK_Riders_Races_RaceId",
                         column: x => x.RaceId,
                         principalTable: "Races",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Results",
+                columns: table => new
+                {
+                    Id = table.Column<string>(nullable: false),
+                    Time = table.Column<DateTime>(nullable: true),
+                    TimeSource = table.Column<string>(nullable: true),
+                    Name = table.Column<string>(nullable: true),
+                    Number = table.Column<string>(nullable: true),
+                    NumberSource = table.Column<string>(nullable: true),
+                    IsIgnored = table.Column<bool>(nullable: false),
+                    Data = table.Column<string>(nullable: true),
+                    CreatedOn = table.Column<DateTime>(nullable: false),
+                    Lap = table.Column<int>(nullable: false),
+                    Place = table.Column<int>(nullable: false),
+                    StartId = table.Column<int>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Results", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Results_Starts_StartId",
+                        column: x => x.StartId,
+                        principalTable: "Starts",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -162,26 +237,6 @@ namespace veloTiming.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "RiderRfid",
-                columns: table => new
-                {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    RfidId = table.Column<string>(nullable: true),
-                    RiderId = table.Column<int>(nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_RiderRfid", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_RiderRfid_Riders_RiderId",
-                        column: x => x.RiderId,
-                        principalTable: "Riders",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
             migrationBuilder.CreateIndex(
                 name: "IX_Entry_CategoryId",
                 table: "Entry",
@@ -198,14 +253,29 @@ namespace veloTiming.Migrations
                 column: "RaceId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_RiderRfid_RiderId",
-                table: "RiderRfid",
-                column: "RiderId");
+                name: "IX_RaceNumber_NumberId",
+                table: "RaceNumber",
+                column: "NumberId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RaceNumber_RaceId",
+                table: "RaceNumber",
+                column: "RaceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Results_StartId",
+                table: "Results",
+                column: "StartId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Riders_CategoryId",
                 table: "Riders",
                 column: "CategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Riders_NumberId",
+                table: "Riders",
+                column: "NumberId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Riders_RaceId",
@@ -234,19 +304,25 @@ namespace veloTiming.Migrations
                 name: "Entry");
 
             migrationBuilder.DropTable(
-                name: "RiderRfid");
+                name: "RaceNumber");
 
             migrationBuilder.DropTable(
-                name: "StartCategory");
+                name: "Results");
 
             migrationBuilder.DropTable(
                 name: "Riders");
 
             migrationBuilder.DropTable(
-                name: "Starts");
+                name: "StartCategory");
+
+            migrationBuilder.DropTable(
+                name: "Numbers");
 
             migrationBuilder.DropTable(
                 name: "RaceCategories");
+
+            migrationBuilder.DropTable(
+                name: "Starts");
 
             migrationBuilder.DropTable(
                 name: "Races");

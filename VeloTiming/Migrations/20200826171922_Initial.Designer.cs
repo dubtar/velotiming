@@ -6,11 +6,11 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using VeloTiming.Data;
 
-namespace veloTiming.Migrations
+namespace Velotiming.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20200821155059_MoveTypeToStartFromRace")]
-    partial class MoveTypeToStartFromRace
+    [Migration("20200826171922_Initial")]
+    partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
