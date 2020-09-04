@@ -75,14 +75,6 @@ const StartEdit: React.SFC<Props> = (props) => {
                                 onChange={handleChange} isInvalid={touched.plannedStart && !!errors.plannedStart} />
                             <Feedback type="invalid">{errors.plannedStart}</Feedback>
                         </Form.Group>
-                        <Form.Group as={Col} controlId="delayMarksAfterStartMinutes" className="col-1">
-                            <Form.Label title="Сколько минут не добавлять результаты после старта">Задержка</Form.Label>
-                            <Form.Control type="number" value={values.delayMarksAfterStartMinutes}
-                                name="delayMarksAfterStartMinutes"
-                                onChange={handleChange}
-                                isInvalid={!!errors.delayMarksAfterStartMinutes} />
-                            <Feedback type="invalid">{errors.delayMarksAfterStartMinutes}</Feedback>
-                        </Form.Group>
                         <Form.Group controlId="type">
                             <Form.Label>Тип</Form.Label>
                             <Form.Check type="radio"
@@ -106,6 +98,16 @@ const StartEdit: React.SFC<Props> = (props) => {
                             />
                             <Form.Control.Feedback type="invalid">{errors.type}</Form.Control.Feedback>
                         </Form.Group>
+                        {values.type === StartType.Laps &&
+                            <Form.Group as={Col} controlId="delayMarksAfterStartMinutes" className="col-1">
+                                <Form.Label title="Сколько минут не добавлять результаты после старта">Задержка <span className="icon_question"/></Form.Label>
+                                <Form.Control type="number" value={values.delayMarksAfterStartMinutes}
+                                    name="delayMarksAfterStartMinutes"
+                                    onChange={handleChange}
+                                    isInvalid={!!errors.delayMarksAfterStartMinutes} />
+                                <Feedback type="invalid">{errors.delayMarksAfterStartMinutes}</Feedback>
+                            </Form.Group>
+                        }
                         <Form.Group as={Col} controlId="categories">
                             <Form.Label>Категории</Form.Label>
                             <Form.Row>

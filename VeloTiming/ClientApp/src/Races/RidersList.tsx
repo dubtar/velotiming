@@ -1,12 +1,14 @@
 import React from 'react';
-import { Alert, Button, ButtonGroup, Col, Row, Spinner, Table } from 'react-bootstrap';
+import { Alert, Button, ButtonGroup, Col, Row, Spinner, Table, Modal } from 'react-bootstrap';
 import EditRider from './EditRider';
 import { RiderClient, RiderDto, Sex } from '../clients';
+import ImportRiders from './ImportRiders'
 
 const InitialState = {
     editRider: null as RiderDto | null,
     error: null as string | null,
-    riders: null as RiderDto[] | null
+    riders: null as RiderDto[] | null,
+    showImport: false
 }
 
 type Props = { raceId: number }
@@ -19,6 +21,8 @@ export default class RidersList extends React.Component<Props, typeof InitialSta
         this.addRider = this.addRider.bind(this)
         this.saveRider = this.saveRider.bind(this)
         this.onKeyPress = this.onKeyPress.bind(this)
+        this.showImportRidersDialog = this.showImportRidersDialog.bind(this)
+        this.closeImportRidersDialog = this.closeImportRidersDialog.bind(this)
     }
 
     public async componentDidMount() {
@@ -42,8 +46,7 @@ export default class RidersList extends React.Component<Props, typeof InitialSta
         this.setState({ editRider })
     }
 
-    public onKeyPress(ev: KeyboardEvent)
-    {
+    public onKeyPress(ev: KeyboardEvent) {
         if (ev.key === 'Insert') this.addRider()
     }
 
@@ -83,13 +86,17 @@ export default class RidersList extends React.Component<Props, typeof InitialSta
                 {!this.state.riders && <Spinner animation="grow" />}
                 {this.state.riders && (
                     <>
-                        {this.state.editRider !== null && 
+                        {this.state.editRider !== null &&
                             <EditRider rider={this.state.editRider} raceId={this.props.raceId} onSubmit={this.saveRider} />}
-                        {this.state.editRider === null &&  <Button className="mv-3" onClick={this.addRider}>Добавить участника (Ins)</Button>}
+                        {this.state.editRider === null &&
+                            <>
+                                <Button className="mv-3" onClick={this.addRider}>Добавить участника (Ins)</Button>
+                                <Button className="float-right" onClick={this.showImportRidersDialog}>Импорт участников</Button> 
+                            </>}
                         <Row><Col>
                             <Table striped={true} hover={true} bordered={true}>
                                 <thead><tr>
-                                    <th/>
+                                    <th />
                                     <th>Номер</th>
                                     <th>Имя</th>
                                     <th>Пол</th>
@@ -98,7 +105,7 @@ export default class RidersList extends React.Component<Props, typeof InitialSta
                                     <th>Кат.</th>
                                     <th>Город</th>
                                     <th>Команда</th>
-                                    <th/>
+                                    <th />
                                 </tr></thead>
                                 <tbody>
                                     {this.state.riders.map(rider => (
@@ -125,8 +132,16 @@ export default class RidersList extends React.Component<Props, typeof InitialSta
                         </Col></Row>
                     </>
                 )}
+                <ImportRiders show={this.state.showImport} onHide={this.closeImportRidersDialog} />
             </>
         )
     }
 
+    private showImportRidersDialog() {
+        this.setState({ showImport: true });
+    }
+
+    private closeImportRidersDialog() {
+        this.setState({ showImport: false })
+    }
 }

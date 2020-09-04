@@ -56,10 +56,11 @@ export default class StartsList extends React.Component<Props, typeof InitialSta
                                         <td>{start.categories && start.categories.map(c => c.name).join(', ')}</td>
                                         <td>
                                             <ButtonGroup>
-                                                {start.realStart == null &&
+                                                {start.realStart == null ?
                                                     <Button variant="success" onClick={this.start.bind(this, start.id!)}>Начать</Button>
-                                                    ||
-                                                    <Link className="btn btn-outline-success" to={`results/${start.id}`}>Результаты</Link>}
+                                                    :
+                                                    <Link className="btn btn-outline-success" to={`results/${start.id}`}>Результаты</Link>
+                                                }
                                                 <Button variant="outline-primary" onClick={this.editStart.bind(this, start)}>Изменить</Button>
                                                 <Button variant="outline-danger" onClick={this.deleteStart.bind(this, start.id!)}>Удалить</Button>
                                             </ButtonGroup>
