@@ -79,7 +79,7 @@ export default class RaceEdit extends React.Component<Props, typeof InitialState
                     <h1>{this.state.values.id ? this.state.values.name : 'Новая гонка'}</h1>
                     <Formik initialValues={this.state.values} validationSchema={schema} onSubmit={this.onSubmit}>
                         {({ values, touched, errors, handleSubmit, handleChange }) => (
-                            <Form noValidate onSubmit={handleSubmit}>
+                            <Form noValidate>
                                 <Form.Group controlId="date">
                                     <Form.Label>Дата</Form.Label>
                                     <Form.Control required type="date" placeholder="Дата гонки" name="date"

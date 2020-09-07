@@ -25,9 +25,11 @@ const schema = yupObject({
 const EditCategory: React.SFC<Props> = (props: Props) => {
     const onReset = () => props.onSubmit(undefined)
     return (
-        <Formik validationSchema={schema} onSubmit={props.onSubmit} initialValues={props.category} onReset={onReset}>
-            {({ handleSubmit, handleChange, handleReset, values, touched, errors }) => (
-                <Form noValidate onSubmit={handleSubmit} onReset={handleReset} className="bg-light p-3">
+        <Formik validationSchema={schema} onSubmit={props.onSubmit} initialValues={props.category}
+            onReset={onReset}>
+            {({ handleSubmit, handleReset, handleChange, values, touched, errors }) => {
+                const onSubmit = (e: React.FormEvent<HTMLElement>) => { handleSubmit(e as React.FormEvent<HTMLFormElement>) }
+                return (<Form onSubmit={onSubmit} onReset={handleReset} noValidate className="bg-light p-3">
                     <h3>{values.id ? 'Правка категории' : 'Новая категория'}</h3>
                     <Form.Row>
                         <Form.Group as={Col} controlId="code" className="col-2">
@@ -84,7 +86,9 @@ const EditCategory: React.SFC<Props> = (props: Props) => {
                         <Button variant="secondary" type="reset" className="ml-3">Отмена</Button>
                     </Form.Row>
                 </Form>
-            )}
+                )
+            }
+            }
         </Formik>)
 }
 

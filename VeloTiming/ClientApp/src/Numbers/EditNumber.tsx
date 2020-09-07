@@ -1,6 +1,6 @@
 import * as signalR from "@aspnet/signalr";
 import React from "react";
-import { Col, Form, FormControlProps, Row, Button } from "react-bootstrap";
+import { Col, Form, Row, Button } from "react-bootstrap";
 import { INumber } from "./NumberService";
 
 type Props = { number: INumber; onSave: (num?: INumber) => void };
@@ -103,7 +103,7 @@ export default class EditNumber extends React.Component<
     this.props.onSave();
   }
 
-  private onIdChange(e: React.FormEvent<FormControlProps>) {
+  private onIdChange(e: React.ChangeEvent<HTMLInputElement>) {
     this.setState({ numberId: (e.target as HTMLInputElement).value });
   }
 

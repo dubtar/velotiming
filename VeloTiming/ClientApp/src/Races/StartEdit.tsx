@@ -60,7 +60,7 @@ const StartEdit: React.SFC<Props> = (props) => {
     return (
         <Formik validationSchema={schema} onSubmit={onSubmit} initialValues={formValues} onReset={onReset}>
             {({ handleSubmit, handleChange, handleReset, values, touched, errors }) => (
-                <Form noValidate onSubmit={handleSubmit} onReset={handleReset} className="bg-light p-3">
+                <Form noValidate onReset={handleReset} className="bg-light p-3">
                     <Form.Row>
                         <Form.Group as={Col} controlId="name" className="col-2">
                             <Form.Label>Название</Form.Label>

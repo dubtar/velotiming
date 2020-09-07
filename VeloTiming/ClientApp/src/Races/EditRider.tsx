@@ -59,7 +59,7 @@ export default class EditRider extends React.Component<Props, typeof InitialStat
                     enableReinitialize={true}
                     >
                     {({ handleSubmit, handleChange, handleReset, values, touched, errors, setFieldValue }) => (
-                        <Form noValidate onSubmit={handleSubmit} onReset={handleReset} className="bg-light p-3">
+                        <Form noValidate onReset={handleReset} className="bg-light p-3">
                             <Form.Row>
                                 <Form.Group as={Col} controlId="number" className="col-1">
                                     <Form.Label>Номер</Form.Label>

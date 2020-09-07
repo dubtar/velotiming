@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert, Button, ButtonGroup, Col, Row, Spinner, Table, Modal } from 'react-bootstrap';
+import { Alert, Button, ButtonGroup, Col, Row, Spinner, Table } from 'react-bootstrap';
 import EditRider from './EditRider';
 import { RiderClient, RiderDto, Sex } from '../clients';
 import ImportRiders from './ImportRiders'
