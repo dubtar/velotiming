@@ -132,7 +132,7 @@ export default class RidersList extends React.Component<Props, typeof InitialSta
                         </Col></Row>
                     </>
                 )}
-                <ImportRiders show={this.state.showImport} onHide={this.closeImportRidersDialog} />
+                <ImportRiders raceId={this.props.raceId} show={this.state.showImport} onHide={this.closeImportRidersDialog} />
             </>
         )
     }

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using VeloTiming.Data;
+using VeloTiming.Logic;
 
 namespace VeloTiming.Controllers
 {
@@ -13,10 +14,12 @@ namespace VeloTiming.Controllers
     public class RiderController : ControllerBase
     {
         private readonly DataContext dataContext;
+        private readonly IRiderImportLogic riderImportLogic;
 
-        public RiderController(DataContext dataContext)
+        public RiderController(DataContext dataContext, IRiderImportLogic riderImportLogic)
         {
             this.dataContext = dataContext;
+            this.riderImportLogic = riderImportLogic;
         }
 
 
@@ -67,6 +70,29 @@ namespace VeloTiming.Controllers
             await dataContext.SaveChangesAsync();
             return await Get(raceId);
         }
+
+        [HttpPost]
+        public async Task<ActionResult<string>> Import(ImportDto dto)
+        {
+            ActionResult<string> result = null;
+            try
+            {
+                result = Ok(await riderImportLogic.Import(dto.RaceId, dto.Content, dto.ColumnTypes, dto.IgnoreFirstRow));
+            }
+            catch (Exception ex)
+            {
+                result = BadRequest(ex.Message);
+            }
+            return result;
+        }
+    }
+
+    public class ImportDto
+    {
+        public int RaceId { get; set; }
+        public string Content { get; set; }
+        public RiderImportColumnType[] ColumnTypes { get; set; }
+        public bool IgnoreFirstRow { get; set; }
     }
 
     public class RiderDto

@@ -10,6 +10,7 @@ using Microsoft.Extensions.Hosting;
 using VeloTiming.Controllers;
 using VeloTiming.Data;
 using VeloTiming.Hubs;
+using VeloTiming.Logic;
 using VeloTiming.Services;
 
 namespace VeloTiming
@@ -46,6 +47,8 @@ namespace VeloTiming
             services.AddTransient<INumberService, NumberService>();
             services.AddTransient<ITimeService, TimeService>();
             services.AddTransient<IResultRepository, ResultRepository>();
+
+            services.AddTransient<IRiderImportLogic, RiderImportLogic>();
 
             services.AddHostedService<QueuedHostedService>();
             services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();

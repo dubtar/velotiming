@@ -1,26 +1,17 @@
 import { Modal, Form, Button, Table, Alert } from "react-bootstrap"
 import React from "react"
+import { RiderClient, RiderImportColumnType, ImportDto } from '../clients'
 
 const InitialState = {
+    columnTypes: [] as RiderImportColumnType[],
+    errors: [] as string[],
     fileContent: null as string | null,
+    isImporting: false,
     rows: null as string[][] | null,
-    skipFirstRow: false,
-    columnTypes: [] as string[],
-    errors: [] as string[]
+    skipFirstRow: false
 }
 
-const COLUMNS = {
-    Skip: '',
-    Surname: 'surname',
-    Name: 'name',
-    SurnameName: 'surname name',
-    Sex: 'sex',
-    Year: 'year',
-    City: 'city',
-    Team: 'team'
-}
-
-type Props = { show: boolean, onHide: () => void }
+type Props = { raceId: number, show: boolean, onHide: () => void }
 
 export default class ImportRiders extends React.Component<Props, typeof InitialState> {
     /**
@@ -75,7 +66,7 @@ export default class ImportRiders extends React.Component<Props, typeof InitialS
                     }
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="primary" onClick={this.import}>Импортировать</Button>
+                    <Button variant="primary" disabled={!this.state.fileContent || this.state.isImporting} onClick={this.import}>Импортировать</Button>
                     <Button variant="secondary" onClick={this.props.onHide}>Отмена</Button>
                 </Modal.Footer>
             </Modal>
@@ -95,18 +86,18 @@ export default class ImportRiders extends React.Component<Props, typeof InitialS
 
     private onColumnChange(index: number, event: React.ChangeEvent<HTMLInputElement>) {
         const columnTypes = this.state.columnTypes
-        columnTypes[index] = event.currentTarget.value;
+        columnTypes[index] = RiderImportColumnType[event.currentTarget.value as keyof typeof RiderImportColumnType];
         this.setState({ columnTypes })
     }
 
     private parseList(fileContent: string) {
         const sep = ';'
         const rows = fileContent.split('\n').map((line => line.split(sep)));
-        const columnTypes = rows.length ? rows[0].map(_ => '') : []
+        const columnTypes = rows.length ? rows[0].map(_ => RiderImportColumnType.Skip) : []
         this.setState({ fileContent, rows, columnTypes });
     }
 
-    private validateSingle(filter: (type: string) => boolean, label: string, errors: string[]) {
+    private validateSingle(filter: (type: RiderImportColumnType | undefined) => boolean, label: string, errors: string[]) {
         const surnameCount = this.state.columnTypes.filter(filter).length;
         if (surnameCount === 0) {
             errors.push(`Колонка с ${label} не выбрана`)
@@ -115,32 +106,47 @@ export default class ImportRiders extends React.Component<Props, typeof InitialS
         }
     }
 
-    private import() {
+    private async import() {
         const errors: string[] = []
         // Surname check
-        this.validateSingle(type => type === COLUMNS.Surname || type === COLUMNS.SurnameName, 'Фамилией', errors)
-        this.validateSingle(type => type === COLUMNS.Name || type === COLUMNS.SurnameName, 'Имeнем', errors)
+        this.validateSingle(type => type !== undefined && [RiderImportColumnType.Lastname, RiderImportColumnType.LastFirstName, RiderImportColumnType.FirstLastName].includes(type),
+            'Фамилией', errors)
+        this.validateSingle(type => type !== undefined && [RiderImportColumnType.FirstName, RiderImportColumnType.FirstLastName, RiderImportColumnType.LastFirstName].includes(type),
+            'Имeнем', errors)
 
         this.setState({ errors });
         if (errors.length === 0) {
-            // TODO: call import on server
-            this.props.onHide();
-            this.setState({ rows: [], fileContent: null })
+            try {
+                const result = await new RiderClient().import(new ImportDto({
+                    raceId: this.props.raceId,
+                    columnTypes: this.state.columnTypes,
+                    content: this.state.fileContent!,
+                    ignoreFirstRow: this.state.skipFirstRow
+                }))
+                // TODO: call import on server
+                alert(result);
+                this.setState({ rows: [], fileContent: null })
+                this.props.onHide();
+            }
+            catch (err) {
+                this.setState({ errors: [err]})
+            }
         }
     }
 }
 
-type ColumnComboProps = { value: string | undefined, onChange: (event: React.ChangeEvent<HTMLInputElement>) => void }
+type ColumnComboProps = { value: RiderImportColumnType | undefined, onChange: (event: React.ChangeEvent<HTMLInputElement>) => void }
 
 const ColumnCombo: React.SFC<ColumnComboProps> = (props: ColumnComboProps) => {
     return <Form.Control as="select" onChange={props.onChange} value={props.value}>
         <option value='' defaultChecked={true}>Пропустить</option>
-        <option value={COLUMNS.Surname}>Фамилия</option>
-        <option value={COLUMNS.Name}>Имя</option>
-        <option value={COLUMNS.SurnameName}>Фамилия Имя</option>
-        <option value={COLUMNS.Sex}>Пол</option>
-        <option value={COLUMNS.Year}>Год рождения</option>
-        <option value={COLUMNS.City}>Город</option>
-        <option value={COLUMNS.Team}>Команда</option>
+        <option value={RiderImportColumnType.Lastname}>Фамилия</option>
+        <option value={RiderImportColumnType.FirstName}>Имя</option>
+        <option value={RiderImportColumnType.LastFirstName}>Фамилия Имя</option>
+        <option value={RiderImportColumnType.FirstLastName}>Имя Фамилия</option>
+        <option value={RiderImportColumnType.Sex}>Пол</option>
+        <option value={RiderImportColumnType.Year}>Год рождения</option>
+        <option value={RiderImportColumnType.City}>Город</option>
+        <option value={RiderImportColumnType.Team}>Команда</option>
     </Form.Control>
 }
