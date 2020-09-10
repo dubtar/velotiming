@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Text.Json.Serialization;
+using System.Collections.Generic;
 
 namespace VeloTiming.Logic
 {
@@ -43,7 +44,7 @@ namespace VeloTiming.Logic
 
             const string SEPARATOR = ";";
 
-            Race race = await dataContext.Races.FindAsync(raceId);
+            Race race = await dataContext.Races.Include(r => r.Categories).FirstOrDefaultAsync(r => r.Id == raceId);
             if (race == null) throw new System.Exception($"Race not found by Id: {raceId}");
 
             var allRiders = await dataContext.Riders.Where(r => r.RaceId == raceId).ToListAsync();
@@ -75,6 +76,14 @@ namespace VeloTiming.Logic
                                 break;
                             case RiderImportColumnType.FirstName: rider.FirstName = value.Trim(); break;
                             case RiderImportColumnType.Lastname: rider.LastName = value.Trim(); break;
+                            case RiderImportColumnType.LastFirstName:
+                                splited = value.Split(' ', 2, System.StringSplitOptions.RemoveEmptyEntries);
+                                if (splited.Length == 2)
+                                {
+                                    rider.LastName = splited[0].Trim();
+                                    rider.FirstName = splited[1].Trim();
+                                }
+                                break;
                             case RiderImportColumnType.Sex:
                                 rider.Sex = items[i].StartsWith("ж", System.StringComparison.CurrentCultureIgnoreCase) ? Sex.Female : Sex.Male;
                                 break;
@@ -95,9 +104,12 @@ namespace VeloTiming.Logic
                     if (existingRider == null)
                     {
                         rider.RaceId = raceId;
+                        // determine category
+                        SetRiderCategory(rider, race.Categories);
                         dataContext.Add(rider);
+                        added++;
                     }
-                    else 
+                    else
                     {
                         // update only City and Team if set
                         if (!string.IsNullOrWhiteSpace(rider.City))
@@ -105,15 +117,30 @@ namespace VeloTiming.Logic
                         if (!string.IsNullOrWhiteSpace(rider.Team))
                             existingRider.Team = rider.Team;
                         dataContext.Update(existingRider);
+                        existed++;
                     }
                 }
             }
 
             await dataContext.SaveChangesAsync();
-            string result = $"Добавлено: {added}";
+
+            string result = $"Всего: {added + existed + failed}Добавлено: {added}";
             if (existed > 0)
                 result += $", повторов: {existed}";
+            if (failed > 0)
+                result += $", игнорировано: {failed}";
             return result;
+        }
+
+        private void SetRiderCategory(Rider rider, IEnumerable<RaceCategory> categories)
+        {
+            rider.Category = categories.FirstOrDefault(cat => 
+                (cat.MinYearOfBirth != null || cat.MaxYearOfBirth != null) // skip categories without years
+                && 
+                     cat.Sex == rider.Sex &&
+                    (cat.MinYearOfBirth == null || cat.MinYearOfBirth <= rider.YearOfBirth) &&
+                    (cat.MaxYearOfBirth == null || cat.MaxYearOfBirth >= rider.YearOfBirth)
+            );
         }
     }
 }

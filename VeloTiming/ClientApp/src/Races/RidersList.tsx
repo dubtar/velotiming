@@ -1,6 +1,6 @@
 import React from 'react';
 import { Alert, Button, ButtonGroup, Col, Row, Spinner, Table } from 'react-bootstrap';
-import EditRider from './EditRider';
+import RiderEdit from './RiderEdit';
 import { RiderClient, RiderDto, Sex } from '../clients';
 import ImportRiders from './ImportRiders'
 
@@ -26,56 +26,12 @@ export default class RidersList extends React.Component<Props, typeof InitialSta
     }
 
     public async componentDidMount() {
-        try {
-            const riders = await new RiderClient().get(this.props.raceId)
-            this.setState({ riders })
-        } catch (ex) {
-            this.setState({ error: ex.toString() })
-        }
+        this.loadRiders()
         document.addEventListener('keydown', this.onKeyPress)
     }
+
     public componentWillUnmount() {
         document.removeEventListener('keydown', this.onKeyPress)
-    }
-
-    public addRider() {
-        this.setState({ editRider: new RiderDto() })
-    }
-
-    public editRider(editRider: RiderDto) {
-        this.setState({ editRider })
-    }
-
-    public onKeyPress(ev: KeyboardEvent) {
-        if (ev.key === 'Insert') this.addRider()
-    }
-
-    public async deleteRider(riderId: number) {
-        if (window.confirm('Удалить участника?')) {
-            try {
-                const riders = await new RiderClient().delete(riderId);
-                this.setState({ riders })
-
-            } catch (ex) {
-                this.setState({ error: ex.toString() })
-            }
-        }
-    }
-
-    public async saveRider(rider?: RiderDto) {
-        try {
-            if (rider) {
-                const riders = rider.id ?  // edit exiting
-                    await new RiderClient().update(rider) :
-                    // add new
-                    await new RiderClient().add(this.props.raceId, rider)
-                this.setState({ riders })
-            }
-        } catch (ex) {
-            this.setState({ error: ex.toString() })
-        }
-        // close editor
-        this.setState({ editRider: null })
     }
 
     public render() {
@@ -87,11 +43,11 @@ export default class RidersList extends React.Component<Props, typeof InitialSta
                 {this.state.riders && (
                     <>
                         {this.state.editRider !== null &&
-                            <EditRider rider={this.state.editRider} raceId={this.props.raceId} onSubmit={this.saveRider} />}
+                            <RiderEdit rider={this.state.editRider} raceId={this.props.raceId} onSubmit={this.saveRider} />}
                         {this.state.editRider === null &&
                             <>
                                 <Button className="mv-3" onClick={this.addRider}>Добавить участника (Ins)</Button>
-                                <Button className="float-right" onClick={this.showImportRidersDialog}>Импорт участников</Button> 
+                                <Button className="float-right" onClick={this.showImportRidersDialog}>Импорт участников</Button>
                             </>}
                         <Row><Col>
                             <Table striped={true} hover={true} bordered={true}>
@@ -137,11 +93,61 @@ export default class RidersList extends React.Component<Props, typeof InitialSta
         )
     }
 
+    private addRider() {
+        this.setState({ editRider: new RiderDto() })
+    }
+
+    private editRider(editRider: RiderDto) {
+        this.setState({ editRider })
+    }
+
+    private onKeyPress(ev: KeyboardEvent) {
+        if (ev.key === 'Insert') this.addRider()
+    }
+
+    private async deleteRider(riderId: number) {
+        if (window.confirm('Удалить участника?')) {
+            try {
+                const riders = await new RiderClient().delete(riderId);
+                this.setState({ riders })
+
+            } catch (ex) {
+                this.setState({ error: ex.toString() })
+            }
+        }
+    }
+
+    private async saveRider(rider?: RiderDto) {
+        try {
+            if (rider) {
+                const riders = rider.id ?  // edit exiting
+                    await new RiderClient().update(rider) :
+                    // add new
+                    await new RiderClient().add(this.props.raceId, rider)
+                this.setState({ riders })
+            }
+        } catch (ex) {
+            this.setState({ error: ex.toString() })
+        }
+        // close editor
+        this.setState({ editRider: null })
+    }
+
+    private async loadRiders() {
+        try {
+            const riders = await new RiderClient().get(this.props.raceId)
+            this.setState({ riders })
+        } catch (ex) {
+            this.setState({ error: ex.toString() })
+        }
+    }
+
     private showImportRidersDialog() {
         this.setState({ showImport: true });
     }
 
     private closeImportRidersDialog() {
+        this.loadRiders();
         this.setState({ showImport: false })
     }
 }

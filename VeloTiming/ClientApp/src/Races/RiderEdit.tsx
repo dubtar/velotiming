@@ -22,7 +22,7 @@ const schema = yupObject({
 
 const InitialState = { rfidNumber: '', categories: null as RaceCategoryDto[] | null }
 
-export default class EditRider extends React.Component<Props, typeof InitialState> {
+export default class RiderEdit extends React.Component<Props, typeof InitialState> {
     private sRconn: signalR.HubConnection | undefined
 
     constructor(props: Props) {
@@ -150,7 +150,9 @@ export default class EditRider extends React.Component<Props, typeof InitialStat
             const year = (yearText && parseInt(yearText, 10)) || 0
             const sex = values.sex;
             if (sex && year > 1900 && year < new Date().getFullYear() && !values.category) {
-                const category = categories.find(cat => cat.sex === sex &&
+                const category = categories.find(cat =>
+                    (cat.minYearOfBirth || cat.maxYearOfBirth) && // skip categories without years
+                     cat.sex === sex &&
                     (!cat.minYearOfBirth || cat.minYearOfBirth <= year) &&
                     (!cat.maxYearOfBirth || cat.maxYearOfBirth >= year));
                 if (category) setFieldValue('category', category.code);

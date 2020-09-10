@@ -43,7 +43,7 @@ export default class ImportRiders extends React.Component<Props, typeof InitialS
                             </Form.Group>
                         </Form>
                     }
-                    {this.state.rows && this.state.rows.length &&
+                    {this.state.rows && this.state.rows.length > 0 &&
                         (<>
                             <Form.Check type="checkbox" checked={this.state.skipFirstRow} label="Пропускать первую строку" onChange={this.onSkipFirstRowCheck} />
                             <Table striped={true} bordered={true}>
