@@ -1,9 +1,11 @@
 import React, { Component } from "react";
 import { Button, Container } from "react-bootstrap";
 import Timer from "./Timer";
-import Svc, { Mark, RaceInfo } from '../svc';
 import { Subscription } from "rxjs";
-import ResultTable from "./ResultTable";
+import LapsTable from "./LapsTable";
+import Svc, { Mark, RaceInfo } from '../svc'
+import { StartType } from "../clients";
+import TimeTrialTable from "./TimeTrialTable";
 
 const InitialState = {
     race: null as RaceInfo | null,
@@ -56,7 +58,14 @@ export default class Timing extends Component<Props, typeof InitialState> {
                         {!this.state.race.start &&
                             <Button onClick={this.start} className="m-3">Начать гонку</Button>
                         }
-                        {this.state.race.start && <ResultTable marks={this.state.marks} />}
+                        {this.state.race.startType === StartType.Laps &&
+                            <div>
+                                {this.state.race.start && <LapsTable marks={this.state.marks} />}
+                            </div>
+                        }
+                        {this.state.race.startType === StartType.TimeTrial &&
+                            <TimeTrialTable marks={this.state.marks} />
+                        }
                     </div>
                     {/* Нижняя часть */}
                     <div className="bg-light">

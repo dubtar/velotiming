@@ -19,7 +19,7 @@ namespace VeloTiming.Data
         public int Lap { get; set; }
         public int Place { get; set; }
 
-        [ForeignKey("Race")]
+        [ForeignKey("Start")]
         public int StartId {get; set; }
         public virtual Start Start {get; set; }
         internal static Mark Create(ITimeService timeService, int startId)

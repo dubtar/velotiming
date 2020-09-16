@@ -1,12 +1,14 @@
 import { Subject, BehaviorSubject } from 'rxjs';
 import moment from 'moment';
 import * as signalR from "@aspnet/signalr";
+import { StartType } from './clients';
 
 export interface RaceInfo {
     raceName: string;
     startName: string;
     startId: number;
     start: Date | null;
+    startType: StartType
 }
 
 export interface Mark {

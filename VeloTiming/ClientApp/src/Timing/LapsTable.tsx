@@ -6,7 +6,7 @@ interface Props {
     marks: Mark[] | null;
 }
 
-const ResultTable: React.SFC<Props> = (props: Props) => {
+const LapsTable: React.SFC<Props> = (props: Props) => {
     return (
         <Table striped hover>
             <thead>
@@ -34,4 +34,4 @@ const ResultTable: React.SFC<Props> = (props: Props) => {
         </Table>);
 }
 
-export default ResultTable;
+export default LapsTable;
